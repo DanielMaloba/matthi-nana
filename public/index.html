@@ -781,7 +781,7 @@ table.t tr:hover td{background:#F4F7FA}
 
 <div class="console" id="console">
   <div class="cbar">
-    <span class="ct">M &amp; N</span>
+    <span class="ct">M &amp; N <small id="cbuild" style="font-family:var(--sans);font-size:10px;color:var(--ink-soft);letter-spacing:.05em"></small></span>
     <button data-cp="dash" class="on">Tableau de bord</button>
     <button data-cp="guests">Invités</button>
     <button data-cp="invites">Invitations</button>
@@ -799,6 +799,7 @@ table.t tr:hover td{background:#F4F7FA}
     <button id="consoleClose">Fermer</button>
   </div>
   <div class="cwrap">
+    <div id="cstatus"></div>
     <div class="cpane on" id="cp-dash"></div>
     <div class="cpane" id="cp-guests"></div>
     <div class="cpane" id="cp-invites"></div>
@@ -1093,9 +1094,8 @@ function mediaBase(){
   try{
     const c = (typeof S!=="undefined" && S.config) ? S.config : null;
     if(c && c.mediaBase) return c.mediaBase.replace(/\/+$/,"")+"/";
-    if(c && c.sync && c.sync.url) return c.sync.url.replace(/\/+$/,"")+"/storage/v1/object/public/photos/";
   }catch(e){}
-  return "media/";
+  return "media/";          // the folder shipped beside index.html
 }
 function mediaURL(id){ return MEDIA[id] ? mediaBase()+MEDIA[id] : ""; }
 function hasArt(){ return !!(typeof window !== "undefined" && window.storage && typeof window.storage.get === "function"); }
@@ -1105,37 +1105,71 @@ const SHOOT = {};
 const MEDIA = {"h1": "h1.jpg", "h2": "h2.jpg", "h3": "h3.jpg", "h4": "h4.jpg", "pbride": "pbride.jpg", "pgroom": "pgroom.jpg", "s_857A2147": "s_857A2147.jpg", "s_857A2148": "s_857A2148.jpg", "s_857A2152": "s_857A2152.jpg", "s_857A2158": "s_857A2158.jpg", "s_857A2166": "s_857A2166.jpg", "s_857A2174": "s_857A2174.jpg", "s_857A2183": "s_857A2183.jpg", "s_857A2184": "s_857A2184.jpg", "s_857A2235": "s_857A2235.jpg", "s_857A2239": "s_857A2239.jpg", "s_857A2242": "s_857A2242.jpg", "s_857A2246": "s_857A2246.jpg", "s_DSC02026": "s_DSC02026.jpg", "s_DSC02044": "s_DSC02044.jpg", "s_DSC02053": "s_DSC02053.jpg", "s_DSC02083": "s_DSC02083.jpg", "s_DSC02104": "s_DSC02104.jpg", "s_DSC02107": "s_DSC02107.jpg", "s_DSC02113": "s_DSC02113.jpg", "s_DSC02114": "s_DSC02114.jpg", "s_DSC02117": "s_DSC02117.jpg", "s_DSC02128": "s_DSC02128.jpg", "s_DSC02141": "s_DSC02141.jpg", "seed1": "seed1.jpg", "seed2": "seed2.jpg", "story": "story.jpg", "venue": "venue.jpg", "pbestman": "pbestman.jpg", "invite": "invite.jpg"};
 const SHOOT_LIST = [{"id": "s_857A2147", "fr": "Devant le cœur de roses", "en": "Before the heart of roses"}, {"id": "s_857A2148", "fr": "Devant le cœur de roses", "en": "Before the heart of roses"}, {"id": "s_857A2152", "fr": "Les fleurs", "en": "The flowers"}, {"id": "s_857A2158", "fr": "Assise, les roses dans les bras", "en": "Seated, roses in her arms"}, {"id": "s_857A2166", "fr": "Le rire qui a tout dit", "en": "The laugh that said everything"}, {"id": "s_857A2174", "fr": "Un instant à eux", "en": "A moment of their own"}, {"id": "s_857A2183", "fr": "Le baiser", "en": "The kiss"}, {"id": "s_857A2184", "fr": "Le baiser", "en": "The kiss"}, {"id": "s_857A2235", "fr": "Le champagne", "en": "Champagne"}, {"id": "s_857A2239", "fr": "Front contre front", "en": "Forehead to forehead"}, {"id": "s_857A2242", "fr": "Elle, lui, et rien d'autre", "en": "Her, him, and nothing else"}, {"id": "s_857A2246", "fr": "Les yeux dans les yeux", "en": "Eye to eye"}, {"id": "s_DSC02026", "fr": "L'escalier, avant tout", "en": "The staircase, before everything"}, {"id": "s_DSC02044", "fr": "Les yeux bandés", "en": "Blindfolded"}, {"id": "s_DSC02053", "fr": "Le oui", "en": "The yes"}, {"id": "s_DSC02083", "fr": "Un genou à terre", "en": "Down on one knee"}, {"id": "s_DSC02104", "fr": "L'étreinte", "en": "The embrace"}, {"id": "s_DSC02107", "fr": "« Will you marry me »", "en": "« Will you marry me »"}, {"id": "s_DSC02113", "fr": "La demande", "en": "The proposal"}, {"id": "s_DSC02114", "fr": "La bague", "en": "The ring"}, {"id": "s_DSC02117", "fr": "Fiancés", "en": "Engaged"}, {"id": "s_DSC02128", "fr": "Main dans la main", "en": "Hand in hand"}, {"id": "s_DSC02141", "fr": "Portée", "en": "Carried"}];
 
-/* ---------- cloud sync (Supabase REST — no SDK, no build step) ---------- */
-const CLOUD = {url:"", anon:"", admin:"", on:false, hydrated:false, lastError:"", lastSync:null};
+/* ---------- cloud sync (Supabase REST, no SDK, no build step) ---------- */
+const BUILD = "28 oct. 2026, r8";
+const CLOUD = {url:"", anon:"", admin:"", on:false, hydrated:false, lastError:"", lastSync:null,
+               dirty:new Set(), errLog:[], boot:null, bootTried:false, lastCheck:null};
 const LSK = "mn-admin-key";
 const cloudHeaders = k => ({"apikey":CLOUD.anon, "Authorization":"Bearer "+(k||CLOUD.anon), "Content-Type":"application/json"});
-const cloudKeyFor = sk => (String(sk).startsWith("w:") && CLOUD.admin) ? CLOUD.admin : CLOUD.anon;
+// The couple's browser holds the admin key and uses it for every write and delete,
+// so row-level security can never quietly refuse something done from the desk.
+const cloudKeyFor = () => CLOUD.admin || CLOUD.anon;
+function syncChanged(){ try{ if(typeof syncAlert === "function") syncAlert(); }catch(e){} }
+function cloudNote(key, status, msg){
+  CLOUD.lastError = (status ? "HTTP "+status+" " : "") + String(msg||"").slice(0,160);
+  CLOUD.errLog.unshift({key:key, status:status, msg:String(msg||"").slice(0,200), at:new Date().toISOString()});
+  if(CLOUD.errLog.length > 8) CLOUD.errLog.length = 8;
+}
 async function cloudPullAll(){
   if(!CLOUD.on) return false;
   try{
-    const res = await fetch(CLOUD.url+"/rest/v1/wedding_store?select=key,value", {headers:cloudHeaders()});
+    // Photographs stored as database rows are fetched one at a time, only when a page needs them.
+    const res = await fetch(CLOUD.url+"/rest/v1/wedding_store?select=key,value&key=not.like.photo:*", {headers:cloudHeaders(CLOUD.anon)});
     if(!res.ok) throw new Error("HTTP "+res.status+" "+(await res.text()).slice(0,120));
-    (await res.json()).forEach(r=>{ mem[r.key] = r.value; });
+    // Never overwrite a change that has not reached the database yet.
+    (await res.json()).forEach(r=>{ if(!CLOUD.dirty.has(r.key)) mem[r.key] = r.value; });
     CLOUD.hydrated = true; CLOUD.lastError = ""; CLOUD.lastSync = new Date();
     return true;
   }catch(e){ CLOUD.lastError = String(e.message||e); return false; }
 }
+async function cloudGetOne(key){
+  if(!CLOUD.on) return null;
+  try{
+    const r = await fetch(CLOUD.url+"/rest/v1/wedding_store?select=value&key=eq."+encodeURIComponent(key), {headers:cloudHeaders(CLOUD.anon)});
+    if(!r.ok) return null;
+    const rows = await r.json();
+    return rows.length ? rows[0].value : null;
+  }catch(e){ return null; }
+}
 async function cloudSet(key, val){
-  if(!CLOUD.on) return false;
+  if(!CLOUD.on) return true;                       // offline mode: nothing to sync
   try{
     const res = await fetch(CLOUD.url+"/rest/v1/wedding_store?on_conflict=key", {method:"POST",
-      headers:Object.assign(cloudHeaders(cloudKeyFor(key)), {"Prefer":"resolution=merge-duplicates,return=minimal"}),
-      body:JSON.stringify({key, value:val, updated_at:new Date().toISOString()})});
-    if(!res.ok) throw new Error("HTTP "+res.status+" "+(await res.text()).slice(0,140));
-    CLOUD.lastError = ""; return true;
-  }catch(e){ CLOUD.lastError = String(e.message||e); return false; }
+      headers:Object.assign(cloudHeaders(cloudKeyFor()), {"Prefer":"resolution=merge-duplicates,return=minimal"}),
+      body:JSON.stringify({key:key, value:val, updated_at:new Date().toISOString()})});
+    if(!res.ok){ cloudNote(key, res.status, await res.text()); CLOUD.dirty.add(key); syncChanged(); return false; }
+    CLOUD.dirty.delete(key); if(!CLOUD.dirty.size) CLOUD.lastError = ""; syncChanged(); return true;
+  }catch(e){ cloudNote(key, 0, e.message||e); CLOUD.dirty.add(key); syncChanged(); return false; }
 }
 async function cloudDel(key){
-  if(!CLOUD.on) return false;
-  try{ await fetch(CLOUD.url+"/rest/v1/wedding_store?key=eq."+encodeURIComponent(key),
-        {method:"DELETE", headers:cloudHeaders(cloudKeyFor(key))}); return true;
-  }catch(e){ CLOUD.lastError = String(e.message||e); return false; }
+  if(!CLOUD.on) return true;
+  try{
+    const r = await fetch(CLOUD.url+"/rest/v1/wedding_store?key=eq."+encodeURIComponent(key),
+      {method:"DELETE", headers:cloudHeaders(cloudKeyFor())});
+    if(!r.ok){ cloudNote(key, r.status, await r.text()); CLOUD.dirty.add(key); syncChanged(); return false; }
+    // Row-level security answers "deleted" even when it deleted nothing, so look again.
+    if(await cloudGetOne(key) !== null){
+      cloudNote(key, 0, "la suppression n'a pas été prise en compte (la clé d'administration est nécessaire)");
+      CLOUD.dirty.add(key); syncChanged(); return false;
+    }
+    CLOUD.dirty.delete(key); syncChanged(); return true;
+  }catch(e){ cloudNote(key, 0, e.message||e); CLOUD.dirty.add(key); syncChanged(); return false; }
 }
+async function cloudRetryDirty(){
+  if(!CLOUD.on || !CLOUD.dirty.size) return;
+  for(const k of Array.from(CLOUD.dirty)){ if(k in mem) await cloudSet(k, mem[k]); else await cloudDel(k); }
+}
+
 async function cloudUploadCard(code, blob){
   if(!CLOUD.on) throw new Error("no cloud");
   if(!CLOUD.admin) throw new Error("admin key missing");
@@ -1159,34 +1193,119 @@ async function cloudTest(url, anon){
     return {ok:true, msg:"OK"};
   }catch(e){ return {ok:false, msg:String(e.message||e)}; }
 }
+
+// What a guest's browser connects with: connection.json beside the page if it exists,
+// otherwise the address and public key built into the file. Never the desk's stored copy.
+function guestConnection(){
+  const base = (typeof DEFAULTS !== "undefined" && DEFAULTS.config && DEFAULTS.config.sync) || {};
+  const b = CLOUD.boot || {};
+  return {url:String(b.url || base.url || "").replace(/\/+$/,""), anon:(b.anon || base.anon || ""),
+          source:(b.url && b.anon) ? "connection.json" : "clé intégrée au fichier"};
+}
+async function cloudBoot(){
+  if(CLOUD.bootTried) return;
+  CLOUD.bootTried = true;
+  try{
+    const r = await fetch("connection.json", {cache:"no-store"});
+    if(r.ok){ const j = JSON.parse(await r.text()); if(j && j.url && j.anon) CLOUD.boot = {url:j.url, anon:j.anon}; }
+  }catch(e){}
+}
+async function cloudCheck(over){
+  over = over || {};
+  const url = String(over.url || CLOUD.url || "").replace(/\/+$/,""), anon = over.anon || CLOUD.anon;
+  const admin = (over.admin !== undefined) ? over.admin : CLOUD.admin;
+  const out = {read:false, rows:0, wrows:0, blobs:0, hasAdmin:!!admin, write:false, readback:false,
+               guest:null, guestWrite:null, guestSource:"", errors:[], at:new Date()};
+  if(!url || !anon){ out.errors.push("adresse ou clé publique manquante"); CLOUD.lastCheck = out; return out; }
+  const H = k => ({"apikey":anon, "Authorization":"Bearer "+k, "Content-Type":"application/json"});
+  try{
+    const r = await fetch(url+"/rest/v1/wedding_store?select=key", {headers:H(anon)});
+    if(r.ok){
+      const rows = await r.json(); out.read = true; out.rows = rows.length;
+      out.wrows = rows.filter(x=>x.key.indexOf("w:")===0).length;
+      out.blobs = rows.filter(x=>x.key.indexOf("photo:")===0 && x.key!=="photo:_ping").length;
+    } else out.errors.push("lecture refusée, HTTP "+r.status);
+  }catch(e){ out.errors.push("lecture impossible : "+(e.message||e)); }
+  if(!admin){ out.errors.push("aucune clé d'administration dans ce navigateur"); }
+  else{
+    const stamp = Date.now();
+    try{
+      const w = await fetch(url+"/rest/v1/wedding_store?on_conflict=key", {method:"POST",
+        headers:Object.assign(H(admin), {"Prefer":"resolution=merge-duplicates,return=minimal"}),
+        body:JSON.stringify({key:"w:_ping", value:{t:stamp}, updated_at:new Date().toISOString()})});
+      if(w.ok){
+        out.write = true;
+        const rb = await fetch(url+"/rest/v1/wedding_store?select=value&key=eq."+encodeURIComponent("w:_ping"), {headers:H(anon)});
+        if(rb.ok){ const rows = await rb.json(); out.readback = !!(rows[0] && rows[0].value && rows[0].value.t === stamp); }
+        if(!out.readback) out.errors.push("l'écriture est acceptée mais la relecture ne la retrouve pas");
+        await fetch(url+"/rest/v1/wedding_store?key=eq."+encodeURIComponent("w:_ping"), {method:"DELETE", headers:H(admin)});
+      } else out.errors.push("écriture refusée, HTTP "+w.status+" "+(await w.text()).slice(0,140));
+    }catch(e){ out.errors.push("écriture impossible : "+(e.message||e)); }
+  }
+  const g = guestConnection();
+  out.guestSource = g.source;
+  try{
+    const r = await fetch(g.url+"/rest/v1/wedding_store?select=key&limit=1", {headers:{"apikey":g.anon, "Authorization":"Bearer "+g.anon}});
+    out.guest = r.ok;
+    if(!r.ok) out.errors.push("côté invité ("+g.source+") : lecture refusée, HTTP "+r.status);
+    else{
+      const gw = await fetch(g.url+"/rest/v1/wedding_store?on_conflict=key", {method:"POST",
+        headers:{"apikey":g.anon, "Authorization":"Bearer "+g.anon, "Content-Type":"application/json",
+                 "Prefer":"resolution=merge-duplicates,return=minimal"},
+        body:JSON.stringify({key:"photo:_ping", value:"ok", updated_at:new Date().toISOString()})});
+      out.guestWrite = gw.ok;
+      if(!gw.ok) out.errors.push("côté invité : l'envoi d'une réponse serait refusé, HTTP "+gw.status);
+      else if(admin) await fetch(url+"/rest/v1/wedding_store?key=eq."+encodeURIComponent("photo:_ping"), {method:"DELETE", headers:H(admin)});
+    }
+  }catch(e){ out.guest = false; out.errors.push("côté invité : "+(e.message||e)); }
+  CLOUD.lastCheck = out;
+  return out;
+}
+
 function initCloud(cfg){
   const sync = (cfg && cfg.sync) || {};
-  CLOUD.url = String(sync.url||"").replace(/\/+$/,"");
-  CLOUD.anon = sync.anon||"";
+  const g = guestConnection();
   CLOUD.admin = (LS && LS.getItem(LSK)) || "";
+  if(sync.off){ CLOUD.on = false; CLOUD.url = ""; CLOUD.anon = ""; return false; }
+  const base = (DEFAULTS.config.sync) || {};
+  // A stored connection counts only if the couple entered it (or it differs from the built-in one);
+  // a saved copy of the built-in values must not outrank connection.json.
+  const mine = !!(sync.url && sync.anon && (sync.user || sync.anon !== base.anon || sync.url !== base.url));
+  CLOUD.url = String(mine ? sync.url : g.url).replace(/\/+$/,"");
+  CLOUD.anon = mine ? sync.anon : g.anon;
   CLOUD.on = !!(CLOUD.url && CLOUD.anon);
   return CLOUD.on;
 }
 
 async function sget(key, def){
-  if(CLOUD.on && CLOUD.hydrated && (key in mem)) return mem[key];
+  // Once the database has been read, it is the only source of truth: a stale copy in this
+  // browser must never come back to life.
+  if(CLOUD.on && CLOUD.hydrated) return (key in mem) ? mem[key] : def;
   if(hasArt()){ try{ const r = await window.storage.get(key, true); if(r) return JSON.parse(r.value); }catch(e){} }
   if(LS){ const v = LS.getItem("mn:"+key); if(v!=null){ try{ return JSON.parse(v); }catch(e){} } }
   return (key in mem) ? mem[key] : def;
 }
+// Resolves to true only when the value is safe: stored locally and, when a database is
+// connected, accepted by it. Callers that matter check the answer.
 async function sset(key, val){
   mem[key] = val;
   const s = JSON.stringify(val);
   if(LS){ try{ LS.setItem("mn:"+key, s); }catch(e){} }
   if(hasArt()){ try{ await window.storage.set(key, s, true); }catch(e){} }
-  if(CLOUD.on) await cloudSet(key, val);
+  if(CLOUD.on) return await cloudSet(key, val);
   return true;
 }
 async function sdel(key){
   delete mem[key];
   if(LS) try{ LS.removeItem("mn:"+key); }catch(e){}
   if(hasArt()) try{ await window.storage.delete(key, true); }catch(e){}
-  if(CLOUD.on) await cloudDel(key);
+  if(CLOUD.on) return await cloudDel(key);
+  return true;
+}
+function localDrop(key){
+  delete mem[key]; CLOUD.dirty.delete(key);
+  if(LS) try{ LS.removeItem("mn:"+key); }catch(e){}
+  syncChanged();
 }
 async function slist(prefix){
   const out = new Set(Object.keys(mem).filter(k=>k.startsWith(prefix)));
@@ -1194,6 +1313,7 @@ async function slist(prefix){
   if(hasArt()){ try{ const r = await window.storage.list(prefix, true); if(r) r.keys.forEach(k=>out.add(k)); }catch(e){} }
   return Array.from(out);
 }
+
 
 /* ---------- helpers ---------- */
 const $  = (s,r)=> (r||document).querySelector(s);
@@ -1308,11 +1428,15 @@ const T = {
 "gb.empty":{fr:"Soyez le premier à signer.",en:"Be the first to sign."},
 "rs.label":{fr:"Réponse souhaitée",en:"Kindly reply"},"rs.h":{fr:"Répondre",en:"RSVP"},
 "rs.find":{fr:"Retrouver mon invitation",en:"Find my invitation"},
-"rs.code":{fr:"Code d'invitation ou nom de famille",en:"Invitation code or surname"},
-"rs.hint":{fr:"Le code figure en bas de votre invitation. À défaut, tapez le nom sous lequel vous avez été invité.",
-  en:"Your code is at the foot of your invitation. Otherwise type the name you were invited under."},
+"rs.code":{fr:"Votre nom ou votre code d'invitation",en:"Your name or invitation code"},
+"rs.hint":{fr:"Tapez votre prénom ou votre nom, avec ou sans accents. Le code inscrit sur votre invitation (par exemple MN-1001) fonctionne aussi.",
+  en:"Type your first name or surname, with or without accents. The code printed on your invitation (for example MN-1001) works too."},
 "rs.findbtn":{fr:"Trouver mon invitation",en:"Find my invitation"},
-"rs.none":{fr:"Aucune invitation ne correspond. Vérifiez l'orthographe, ou écrivez-nous.",en:"No invitation matches. Check the spelling, or write to us."},
+"rs.none":{fr:"Aucune invitation ne correspond. Essayez avec votre prénom seul, ou avec le code indiqué sur votre invitation, ou écrivez-nous.",
+           en:"No invitation matches. Try just your first name, or the code printed on your invitation, or write to us."},
+"rs.short":{fr:"Tapez au moins trois lettres de votre nom.",en:"Type at least three letters of your name."},
+"rs.toomany":{fr:"Plusieurs invitations correspondent. Ajoutez votre prénom et votre nom de famille pour préciser.",
+              en:"Several invitations match. Add your first name and surname to narrow it down."},
 "rs.many":{fr:"Plusieurs invitations correspondent. Choisissez la vôtre :",en:"Several match. Choose yours:"},
 "rs.hello":{fr:"Bonjour",en:"Hello"},"rs.invited":{fr:"Invitation",en:"Invitation"},
 "rs.each":{fr:"Merci de répondre pour chaque personne.",en:"Please answer for each person."},
@@ -1488,7 +1612,7 @@ faq:[
 
 party:[{"id": "p1", "name": "Mathithia Maloba", "role": {"fr": "Le marié", "en": "The groom"}, "group": "couple", "photoId": "pgroom", "note": {"fr": "Le dixième et dernier enfant de la maison Maloba.", "en": "The tenth and youngest of the Maloba children."}}, {"id": "p2", "name": "Nanamichele Mundele", "role": {"fr": "La mariée", "en": "The bride"}, "group": "couple", "photoId": "pbride", "note": {"fr": "Fille de la maison Mundele.", "en": "Daughter of the Mundele house."}}, {"id": "p3", "name": "Samuel", "role": {"fr": "Garçon d'honneur", "en": "Groomsman"}, "group": "groom", "photoId": "", "note": {"fr": "", "en": ""}}, {"id": "p4", "name": "Daniel Maloba", "role": {"fr": "Témoin du marié", "en": "Best man"}, "group": "groom", "photoId": "pbestman", "note": {"fr": "", "en": ""}}, {"id": "p5", "name": "Kevin", "role": {"fr": "Garçon d'honneur", "en": "Groomsman"}, "group": "groom", "photoId": "", "note": {"fr": "", "en": ""}}, {"id": "p6", "name": "Ephraim", "role": {"fr": "Garçon d'honneur", "en": "Groomsman"}, "group": "groom", "photoId": "", "note": {"fr": "", "en": ""}}, {"id": "p7", "name": "Ephraim", "role": {"fr": "Témoin de la mariée", "en": "Maid of honour"}, "group": "bride", "photoId": "", "note": {"fr": "", "en": ""}}, {"id": "p8", "name": "Benedict", "role": {"fr": "Demoiselle d'honneur", "en": "Bridesmaid"}, "group": "bride", "photoId": "", "note": {"fr": "", "en": ""}}, {"id": "p9", "name": "Jenny", "role": {"fr": "Demoiselle d'honneur", "en": "Bridesmaid"}, "group": "bride", "photoId": "", "note": {"fr": "", "en": ""}}, {"id": "p10", "name": "Gemima", "role": {"fr": "Demoiselle d'honneur", "en": "Bridesmaid"}, "group": "bride", "photoId": "", "note": {"fr": "", "en": ""}}, {"id": "p11", "name": "Eleanor", "role": {"fr": "Demoiselle d'honneur", "en": "Bridesmaid"}, "group": "bride", "photoId": "", "note": {"fr": "", "en": ""}}, {"id": "p12", "name": "Andrea", "role": {"fr": "Demoiselle d'honneur", "en": "Bridesmaid"}, "group": "bride", "photoId": "", "note": {"fr": "", "en": ""}}, {"id": "p13", "name": "Plamedi", "role": {"fr": "Demoiselle d'honneur", "en": "Bridesmaid"}, "group": "bride", "photoId": "", "note": {"fr": "", "en": ""}}, {"id": "p14", "name": "Claudia", "role": {"fr": "Demoiselle d'honneur", "en": "Bridesmaid"}, "group": "bride", "photoId": "", "note": {"fr": "", "en": ""}}, {"id": "p15", "name": "Kenayah", "role": {"fr": "Demoiselle d'honneur", "en": "Bridesmaid"}, "group": "bride", "photoId": "", "note": {"fr": "", "en": ""}}, {"id": "p16", "name": "Chanty", "role": {"fr": "Enfant d'honneur", "en": "Flower child"}, "group": "children", "photoId": "", "note": {"fr": "", "en": ""}}, {"id": "p17", "name": "Great", "role": {"fr": "Enfant d'honneur", "en": "Flower child"}, "group": "children", "photoId": "", "note": {"fr": "", "en": ""}}, {"id": "p18", "name": "Owe", "role": {"fr": "Enfant d'honneur", "en": "Flower child"}, "group": "children", "photoId": "", "note": {"fr": "", "en": ""}}, {"id": "p19", "name": "Alidore", "role": {"fr": "Enfant d'honneur", "en": "Flower child"}, "group": "children", "photoId": "", "note": {"fr": "", "en": ""}}, {"id": "p20", "name": "Leona", "role": {"fr": "Enfant d'honneur", "en": "Flower child"}, "group": "children", "photoId": "", "note": {"fr": "", "en": ""}}],
 
-registry:[{"id": "g01", "icon": "chair", "price": 35000, "group": true, "always": true, "name": {"fr": "Canapé", "en": "Sofa/Couch"}, "desc": {"fr": "Maison & meubles", "en": "Maison & meubles"}}, {"id": "g02", "icon": "chair", "price": 0, "group": true, "always": true, "name": {"fr": "Table basse", "en": "Coffee Table"}, "desc": {"fr": "Maison & meubles", "en": "Maison & meubles"}}, {"id": "g03", "icon": "chair", "price": 3000, "group": false, "always": false, "name": {"fr": "Meuble TV", "en": "TV Stand"}, "desc": {"fr": "Maison & meubles", "en": "Maison & meubles"}}, {"id": "g04", "icon": "chair", "price": 4000, "group": false, "always": false, "name": {"fr": "Table à manger", "en": "Dining Table"}, "desc": {"fr": "Maison & meubles", "en": "Maison & meubles"}}, {"id": "g05", "icon": "chair", "price": 2800, "group": false, "always": false, "name": {"fr": "Chaises de salle à manger", "en": "Dining Chairs"}, "desc": {"fr": "Maison & meubles", "en": "Maison & meubles"}}, {"id": "g06", "icon": "doc", "price": 2200, "group": false, "always": false, "name": {"fr": "Bibliothèque", "en": "Bookshelf"}, "desc": {"fr": "Maison & meubles", "en": "Maison & meubles"}}, {"id": "g07", "icon": "plate", "price": 800, "group": false, "always": false, "name": {"fr": "Miroir sur pied", "en": "Full-Length Mirror"}, "desc": {"fr": "Maison & meubles", "en": "Maison & meubles"}}, {"id": "g08", "icon": "house", "price": 1500, "group": false, "always": false, "name": {"fr": "Lampadaire", "en": "Floor Lamp"}, "desc": {"fr": "Maison & meubles", "en": "Maison & meubles"}}, {"id": "g09", "icon": "micro", "price": 12000, "group": true, "always": true, "name": {"fr": "Réfrigérateur-congélateur", "en": "Fridge/Freezer"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}}, {"id": "g10", "icon": "micro", "price": 3500, "group": false, "always": false, "name": {"fr": "Micro-ondes", "en": "Microwave"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}}, {"id": "g11", "icon": "fryer", "price": 3000, "group": false, "always": false, "name": {"fr": "Friteuse à air", "en": "Air Fryer"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}}, {"id": "g12", "icon": "mixer", "price": 749, "group": false, "always": false, "name": {"fr": "Blender", "en": "Blender"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}}, {"id": "g13", "icon": "mixer", "price": 1000, "group": false, "always": false, "name": {"fr": "Robot ménager", "en": "Food Processor"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}}, {"id": "g14", "icon": "kettle", "price": 1500, "group": false, "always": false, "name": {"fr": "Bouilloire électrique", "en": "Electric Kettle"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}}, {"id": "g15", "icon": "toaster", "price": 500, "group": false, "always": false, "name": {"fr": "Grille-pain", "en": "Toaster"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}}, {"id": "g16", "icon": "toaster", "price": 700, "group": false, "always": false, "name": {"fr": "Appareil à croque-monsieur", "en": "Sandwich Maker"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}}, {"id": "g17", "icon": "coffee", "price": 0, "group": true, "always": true, "name": {"fr": "Machine à café", "en": "Coffee Machine"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}}, {"id": "g18", "icon": "pot", "price": 1000, "group": false, "always": false, "name": {"fr": "Mijoteuse", "en": "Slow Cooker"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}}, {"id": "g19", "icon": "pot", "price": 800, "group": false, "always": false, "name": {"fr": "Cuiseur à riz", "en": "Rice Cooker"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}}, {"id": "g20", "icon": "pot", "price": 1299, "group": false, "always": false, "name": {"fr": "Autocuiseur", "en": "Pressure Cooker"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}}, {"id": "g21", "icon": "mixer", "price": 0, "group": true, "always": true, "name": {"fr": "Batteur électrique", "en": "Hand Mixer"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}}, {"id": "g22", "icon": "mixer", "price": 0, "group": true, "always": true, "name": {"fr": "Robot pâtissier", "en": "Stand Mixer"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}}, {"id": "g23", "icon": "mixer", "price": 1600, "group": false, "always": false, "name": {"fr": "Centrifugeuse", "en": "Juicer"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}}, {"id": "g24", "icon": "coin", "price": 400, "group": false, "always": false, "name": {"fr": "Balance de cuisine", "en": "Kitchen Scale"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}}, {"id": "g25", "icon": "pot", "price": 2000, "group": false, "always": false, "name": {"fr": "Purificateur d'eau", "en": "Water Filter/Purifier"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}}, {"id": "g26", "icon": "plate", "price": 1250, "group": false, "always": false, "name": {"fr": "Service d'assiettes", "en": "Dinner Plate Set"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}}, {"id": "g27", "icon": "plate", "price": 600, "group": false, "always": false, "name": {"fr": "Assiettes à dessert", "en": "Side Plate Set"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}}, {"id": "g28", "icon": "plate", "price": 600, "group": false, "always": false, "name": {"fr": "Service de bols", "en": "Bowl Set"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}}, {"id": "g29", "icon": "plate", "price": 800, "group": false, "always": false, "name": {"fr": "Ménagère", "en": "Cutlery Set"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}}, {"id": "g30", "icon": "plate", "price": 500, "group": false, "always": false, "name": {"fr": "Verres", "en": "Drinking Glasses"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}}, {"id": "g31", "icon": "plate", "price": 600, "group": false, "always": false, "name": {"fr": "Verres à vin", "en": "Wine Glasses"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}}, {"id": "g32", "icon": "coffee", "price": 400, "group": false, "always": false, "name": {"fr": "Tasses", "en": "Coffee Mugs"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}}, {"id": "g33", "icon": "plate", "price": 500, "group": false, "always": false, "name": {"fr": "Plats de service", "en": "Serving Platters"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}}, {"id": "g34", "icon": "plate", "price": 400, "group": false, "always": false, "name": {"fr": "Saladiers de service", "en": "Serving Bowls"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}}, {"id": "g35", "icon": "plate", "price": 300, "group": false, "always": false, "name": {"fr": "Saladier", "en": "Salad Bowl"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}}, {"id": "g36", "icon": "pot", "price": 600, "group": false, "always": false, "name": {"fr": "Plats à four", "en": "Baking Dishes"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}}, {"id": "g37", "icon": "pot", "price": 2000, "group": false, "always": false, "name": {"fr": "Batterie de casseroles", "en": "Pots & Pans Set"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}}, {"id": "g38", "icon": "pot", "price": 1500, "group": false, "always": false, "name": {"fr": "Poêles anti-adhésives", "en": "Non-Stick Cookware Set"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}}, {"id": "g39", "icon": "plate", "price": 1000, "group": false, "always": false, "name": {"fr": "Set de couteaux", "en": "Knife Set"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}}, {"id": "g40", "icon": "plate", "price": 300, "group": false, "always": false, "name": {"fr": "Planches à découper", "en": "Chopping Boards"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}}, {"id": "g41", "icon": "plate", "price": 200, "group": false, "always": false, "name": {"fr": "Verres et cuillères doseurs", "en": "Measuring Cups & Spoons"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}}, {"id": "g42", "icon": "micro", "price": 500, "group": false, "always": false, "name": {"fr": "Boîtes de conservation", "en": "Food Storage Containers"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}}, {"id": "g43", "icon": "pot", "price": 300, "group": false, "always": false, "name": {"fr": "Étagère à épices", "en": "Spice Rack"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}}, {"id": "g44", "icon": "pot", "price": 300, "group": false, "always": false, "name": {"fr": "Ustensiles de cuisine", "en": "Kitchen Utensils Set"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}}, {"id": "g45", "icon": "plate", "price": 400, "group": false, "always": false, "name": {"fr": "Égouttoir", "en": "Dish Rack"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}}, {"id": "g46", "icon": "washer", "price": 9000, "group": true, "always": true, "name": {"fr": "Machine à laver", "en": "Washing Machine"}, "desc": {"fr": "Buanderie", "en": "Buanderie"}}, {"id": "g47", "icon": "washer", "price": 10000, "group": true, "always": true, "name": {"fr": "Sèche-linge", "en": "Tumble Dryer"}, "desc": {"fr": "Buanderie", "en": "Buanderie"}}, {"id": "g48", "icon": "towel", "price": 700, "group": false, "always": false, "name": {"fr": "Fer à repasser", "en": "Iron"}, "desc": {"fr": "Buanderie", "en": "Buanderie"}}, {"id": "g49", "icon": "towel", "price": 700, "group": false, "always": false, "name": {"fr": "Table à repasser", "en": "Ironing Board"}, "desc": {"fr": "Buanderie", "en": "Buanderie"}}, {"id": "g50", "icon": "vacuum", "price": 4000, "group": false, "always": false, "name": {"fr": "Aspirateur", "en": "Vacuum Cleaner"}, "desc": {"fr": "Buanderie", "en": "Buanderie"}}, {"id": "g51", "icon": "vacuum", "price": 1500, "group": false, "always": false, "name": {"fr": "Balai vapeur", "en": "Steam Mop"}, "desc": {"fr": "Buanderie", "en": "Buanderie"}}, {"id": "g52", "icon": "micro", "price": 0, "group": true, "always": true, "name": {"fr": "Télévision", "en": "Smart TV"}, "desc": {"fr": "Électronique", "en": "Électronique"}}, {"id": "g53", "icon": "micro", "price": 3000, "group": false, "always": false, "name": {"fr": "Barre de son", "en": "Soundbar"}, "desc": {"fr": "Électronique", "en": "Électronique"}}, {"id": "g54", "icon": "micro", "price": 0, "group": true, "always": true, "name": {"fr": "Enceinte Bluetooth", "en": "Bluetooth Speaker"}, "desc": {"fr": "Électronique", "en": "Électronique"}}, {"id": "g55", "icon": "car", "price": 0, "group": true, "always": true, "name": {"fr": "Frais de déménagement", "en": "Moving Expenses"}, "desc": {"fr": "Cagnottes", "en": "Cagnottes"}}, {"id": "g56", "icon": "car", "price": 0, "group": true, "always": true, "name": {"fr": "Camion de déménagement", "en": "Moving Truck/Transport"}, "desc": {"fr": "Cagnottes", "en": "Cagnottes"}}, {"id": "g57", "icon": "house", "price": 0, "group": true, "always": true, "name": {"fr": "Fonds nouvelle maison", "en": "New Home Fund"}, "desc": {"fr": "Cagnottes", "en": "Cagnottes"}}, {"id": "g58", "icon": "chair", "price": 0, "group": true, "always": true, "name": {"fr": "Fonds ameublement", "en": "Furniture Fund"}, "desc": {"fr": "Cagnottes", "en": "Cagnottes"}}, {"id": "g59", "icon": "micro", "price": 0, "group": true, "always": true, "name": {"fr": "Fonds électroménager", "en": "Appliance Fund"}, "desc": {"fr": "Cagnottes", "en": "Cagnottes"}}, {"id": "g60", "icon": "house", "price": 0, "group": true, "always": true, "name": {"fr": "Fonds installation", "en": "Home Setup Fund"}, "desc": {"fr": "Cagnottes", "en": "Cagnottes"}}, {"id": "g61", "icon": "plane", "price": 0, "group": true, "always": true, "name": {"fr": "Lune de miel", "en": "Honeymoon Contribution"}, "desc": {"fr": "Cagnottes", "en": "Cagnottes"}}, {"id": "g62", "icon": "plane", "price": 0, "group": true, "always": true, "name": {"fr": "Escapade au Cap", "en": "Cape Town Experience"}, "desc": {"fr": "Cagnottes", "en": "Cagnottes"}}, {"id": "g63", "icon": "heart", "price": 0, "group": true, "always": true, "name": {"fr": "Fonds anniversaire", "en": "Anniversary Fund"}, "desc": {"fr": "Cagnottes", "en": "Cagnottes"}}],
+registry:[{"id": "g01", "icon": "chair", "price": 35000, "group": true, "always": true, "name": {"fr": "Canapé", "en": "Sofa/Couch"}, "desc": {"fr": "Maison & meubles", "en": "Maison & meubles"}, "code": "SOFACOUC"}, {"id": "g02", "icon": "chair", "price": 0, "group": true, "always": true, "name": {"fr": "Table basse", "en": "Coffee Table"}, "desc": {"fr": "Maison & meubles", "en": "Maison & meubles"}, "code": "COFFEETA"}, {"id": "g03", "icon": "chair", "price": 3000, "group": false, "always": false, "name": {"fr": "Meuble TV", "en": "TV Stand"}, "desc": {"fr": "Maison & meubles", "en": "Maison & meubles"}, "code": "TVSTAND"}, {"id": "g04", "icon": "chair", "price": 4000, "group": false, "always": false, "name": {"fr": "Table à manger", "en": "Dining Table"}, "desc": {"fr": "Maison & meubles", "en": "Maison & meubles"}, "code": "DININGTA"}, {"id": "g05", "icon": "chair", "price": 2800, "group": false, "always": false, "name": {"fr": "Chaises de salle à manger", "en": "Dining Chairs"}, "desc": {"fr": "Maison & meubles", "en": "Maison & meubles"}, "code": "DININGCH"}, {"id": "g06", "icon": "doc", "price": 2200, "group": false, "always": false, "name": {"fr": "Bibliothèque", "en": "Bookshelf"}, "desc": {"fr": "Maison & meubles", "en": "Maison & meubles"}, "code": "BOOKSHEL"}, {"id": "g07", "icon": "plate", "price": 800, "group": false, "always": false, "name": {"fr": "Miroir sur pied", "en": "Full-Length Mirror"}, "desc": {"fr": "Maison & meubles", "en": "Maison & meubles"}, "code": "FULLLENG"}, {"id": "g08", "icon": "house", "price": 1500, "group": false, "always": false, "name": {"fr": "Lampadaire", "en": "Floor Lamp"}, "desc": {"fr": "Maison & meubles", "en": "Maison & meubles"}, "code": "FLOORLAM"}, {"id": "g09", "icon": "micro", "price": 12000, "group": true, "always": true, "name": {"fr": "Réfrigérateur-congélateur", "en": "Fridge/Freezer"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}, "code": "FRIDGEFR"}, {"id": "g10", "icon": "micro", "price": 3500, "group": false, "always": false, "name": {"fr": "Micro-ondes", "en": "Microwave"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}, "code": "MICROWAV"}, {"id": "g11", "icon": "fryer", "price": 3000, "group": false, "always": false, "name": {"fr": "Friteuse à air", "en": "Air Fryer"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}, "code": "AIRFRYER"}, {"id": "g12", "icon": "mixer", "price": 749, "group": false, "always": false, "name": {"fr": "Blender", "en": "Blender"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}, "code": "BLENDER"}, {"id": "g13", "icon": "mixer", "price": 1000, "group": false, "always": false, "name": {"fr": "Robot ménager", "en": "Food Processor"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}, "code": "FOODPROC"}, {"id": "g14", "icon": "kettle", "price": 1500, "group": false, "always": false, "name": {"fr": "Bouilloire électrique", "en": "Electric Kettle"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}, "code": "ELECTRIC"}, {"id": "g15", "icon": "toaster", "price": 500, "group": false, "always": false, "name": {"fr": "Grille-pain", "en": "Toaster"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}, "code": "TOASTER"}, {"id": "g16", "icon": "toaster", "price": 700, "group": false, "always": false, "name": {"fr": "Appareil à croque-monsieur", "en": "Sandwich Maker"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}, "code": "SANDWICH"}, {"id": "g17", "icon": "coffee", "price": 0, "group": true, "always": true, "name": {"fr": "Machine à café", "en": "Coffee Machine"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}, "code": "COFFEEMA"}, {"id": "g18", "icon": "pot", "price": 1000, "group": false, "always": false, "name": {"fr": "Mijoteuse", "en": "Slow Cooker"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}, "code": "SLOWCOOK"}, {"id": "g19", "icon": "pot", "price": 800, "group": false, "always": false, "name": {"fr": "Cuiseur à riz", "en": "Rice Cooker"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}, "code": "RICECOOK"}, {"id": "g20", "icon": "pot", "price": 1299, "group": false, "always": false, "name": {"fr": "Autocuiseur", "en": "Pressure Cooker"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}, "code": "PRESSURE"}, {"id": "g21", "icon": "mixer", "price": 0, "group": true, "always": true, "name": {"fr": "Batteur électrique", "en": "Hand Mixer"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}, "code": "HANDMIXE"}, {"id": "g22", "icon": "mixer", "price": 0, "group": true, "always": true, "name": {"fr": "Robot pâtissier", "en": "Stand Mixer"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}, "code": "STANDMIX"}, {"id": "g23", "icon": "mixer", "price": 1600, "group": false, "always": false, "name": {"fr": "Centrifugeuse", "en": "Juicer"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}, "code": "JUICER"}, {"id": "g24", "icon": "coin", "price": 400, "group": false, "always": false, "name": {"fr": "Balance de cuisine", "en": "Kitchen Scale"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}, "code": "KITCHENS"}, {"id": "g25", "icon": "pot", "price": 2000, "group": false, "always": false, "name": {"fr": "Purificateur d'eau", "en": "Water Filter/Purifier"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}, "code": "WATERFIL"}, {"id": "g26", "icon": "plate", "price": 1250, "group": false, "always": false, "name": {"fr": "Service d'assiettes", "en": "Dinner Plate Set"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}, "code": "DINNERPL"}, {"id": "g27", "icon": "plate", "price": 600, "group": false, "always": false, "name": {"fr": "Assiettes à dessert", "en": "Side Plate Set"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}, "code": "SIDEPLAT"}, {"id": "g28", "icon": "plate", "price": 600, "group": false, "always": false, "name": {"fr": "Service de bols", "en": "Bowl Set"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}, "code": "BOWLSET"}, {"id": "g29", "icon": "plate", "price": 800, "group": false, "always": false, "name": {"fr": "Ménagère", "en": "Cutlery Set"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}, "code": "CUTLERYS"}, {"id": "g30", "icon": "plate", "price": 500, "group": false, "always": false, "name": {"fr": "Verres", "en": "Drinking Glasses"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}, "code": "DRINKING"}, {"id": "g31", "icon": "plate", "price": 600, "group": false, "always": false, "name": {"fr": "Verres à vin", "en": "Wine Glasses"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}, "code": "WINEGLAS"}, {"id": "g32", "icon": "coffee", "price": 400, "group": false, "always": false, "name": {"fr": "Tasses", "en": "Coffee Mugs"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}, "code": "COFFEEMU"}, {"id": "g33", "icon": "plate", "price": 500, "group": false, "always": false, "name": {"fr": "Plats de service", "en": "Serving Platters"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}, "code": "SERVINGP"}, {"id": "g34", "icon": "plate", "price": 400, "group": false, "always": false, "name": {"fr": "Saladiers de service", "en": "Serving Bowls"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}, "code": "SERVINGB"}, {"id": "g35", "icon": "plate", "price": 300, "group": false, "always": false, "name": {"fr": "Saladier", "en": "Salad Bowl"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}, "code": "SALADBOW"}, {"id": "g36", "icon": "pot", "price": 600, "group": false, "always": false, "name": {"fr": "Plats à four", "en": "Baking Dishes"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}, "code": "BAKINGDI"}, {"id": "g37", "icon": "pot", "price": 2000, "group": false, "always": false, "name": {"fr": "Batterie de casseroles", "en": "Pots & Pans Set"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}, "code": "POTSPANS"}, {"id": "g38", "icon": "pot", "price": 1500, "group": false, "always": false, "name": {"fr": "Poêles anti-adhésives", "en": "Non-Stick Cookware Set"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}, "code": "NONSTICK"}, {"id": "g39", "icon": "plate", "price": 1000, "group": false, "always": false, "name": {"fr": "Set de couteaux", "en": "Knife Set"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}, "code": "KNIFESET"}, {"id": "g40", "icon": "plate", "price": 300, "group": false, "always": false, "name": {"fr": "Planches à découper", "en": "Chopping Boards"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}, "code": "CHOPPING"}, {"id": "g41", "icon": "plate", "price": 200, "group": false, "always": false, "name": {"fr": "Verres et cuillères doseurs", "en": "Measuring Cups & Spoons"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}, "code": "MEASURIN"}, {"id": "g42", "icon": "micro", "price": 500, "group": false, "always": false, "name": {"fr": "Boîtes de conservation", "en": "Food Storage Containers"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}, "code": "FOODSTOR"}, {"id": "g43", "icon": "pot", "price": 300, "group": false, "always": false, "name": {"fr": "Étagère à épices", "en": "Spice Rack"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}, "code": "SPICERAC"}, {"id": "g44", "icon": "pot", "price": 300, "group": false, "always": false, "name": {"fr": "Ustensiles de cuisine", "en": "Kitchen Utensils Set"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}, "code": "KITCHENU"}, {"id": "g45", "icon": "plate", "price": 400, "group": false, "always": false, "name": {"fr": "Égouttoir", "en": "Dish Rack"}, "desc": {"fr": "Cuisine & table", "en": "Cuisine & table"}, "code": "DISHRACK"}, {"id": "g46", "icon": "washer", "price": 9000, "group": true, "always": true, "name": {"fr": "Machine à laver", "en": "Washing Machine"}, "desc": {"fr": "Buanderie", "en": "Buanderie"}, "code": "WASHINGM"}, {"id": "g47", "icon": "washer", "price": 10000, "group": true, "always": true, "name": {"fr": "Sèche-linge", "en": "Tumble Dryer"}, "desc": {"fr": "Buanderie", "en": "Buanderie"}, "code": "TUMBLEDR"}, {"id": "g48", "icon": "towel", "price": 700, "group": false, "always": false, "name": {"fr": "Fer à repasser", "en": "Iron"}, "desc": {"fr": "Buanderie", "en": "Buanderie"}, "code": "IRON"}, {"id": "g49", "icon": "towel", "price": 700, "group": false, "always": false, "name": {"fr": "Table à repasser", "en": "Ironing Board"}, "desc": {"fr": "Buanderie", "en": "Buanderie"}, "code": "IRONINGB"}, {"id": "g50", "icon": "vacuum", "price": 4000, "group": false, "always": false, "name": {"fr": "Aspirateur", "en": "Vacuum Cleaner"}, "desc": {"fr": "Buanderie", "en": "Buanderie"}, "code": "VACUUMCL"}, {"id": "g51", "icon": "vacuum", "price": 1500, "group": false, "always": false, "name": {"fr": "Balai vapeur", "en": "Steam Mop"}, "desc": {"fr": "Buanderie", "en": "Buanderie"}, "code": "STEAMMOP"}, {"id": "g52", "icon": "micro", "price": 0, "group": true, "always": true, "name": {"fr": "Télévision", "en": "Smart TV"}, "desc": {"fr": "Électronique", "en": "Électronique"}, "code": "SMARTTV"}, {"id": "g53", "icon": "micro", "price": 3000, "group": false, "always": false, "name": {"fr": "Barre de son", "en": "Soundbar"}, "desc": {"fr": "Électronique", "en": "Électronique"}, "code": "SOUNDBAR"}, {"id": "g54", "icon": "micro", "price": 0, "group": true, "always": true, "name": {"fr": "Enceinte Bluetooth", "en": "Bluetooth Speaker"}, "desc": {"fr": "Électronique", "en": "Électronique"}, "code": "BLUETOOT"}, {"id": "g55", "icon": "car", "price": 0, "group": true, "always": true, "name": {"fr": "Frais de déménagement", "en": "Moving Expenses"}, "desc": {"fr": "Cagnottes", "en": "Cagnottes"}, "code": "MOVINGEX"}, {"id": "g56", "icon": "car", "price": 0, "group": true, "always": true, "name": {"fr": "Camion de déménagement", "en": "Moving Truck/Transport"}, "desc": {"fr": "Cagnottes", "en": "Cagnottes"}, "code": "MOVINGTR"}, {"id": "g57", "icon": "house", "price": 0, "group": true, "always": true, "name": {"fr": "Fonds nouvelle maison", "en": "New Home Fund"}, "desc": {"fr": "Cagnottes", "en": "Cagnottes"}, "code": "NEWHOMEF"}, {"id": "g58", "icon": "chair", "price": 0, "group": true, "always": true, "name": {"fr": "Fonds ameublement", "en": "Furniture Fund"}, "desc": {"fr": "Cagnottes", "en": "Cagnottes"}, "code": "FURNITUR"}, {"id": "g59", "icon": "micro", "price": 0, "group": true, "always": true, "name": {"fr": "Fonds électroménager", "en": "Appliance Fund"}, "desc": {"fr": "Cagnottes", "en": "Cagnottes"}, "code": "APPLIANC"}, {"id": "g60", "icon": "house", "price": 0, "group": true, "always": true, "name": {"fr": "Fonds installation", "en": "Home Setup Fund"}, "desc": {"fr": "Cagnottes", "en": "Cagnottes"}, "code": "HOMESETU"}, {"id": "g61", "icon": "plane", "price": 0, "group": true, "always": true, "name": {"fr": "Lune de miel", "en": "Honeymoon Contribution"}, "desc": {"fr": "Cagnottes", "en": "Cagnottes"}, "code": "HONEYMOO"}, {"id": "g62", "icon": "plane", "price": 0, "group": true, "always": true, "name": {"fr": "Escapade au Cap", "en": "Cape Town Experience"}, "desc": {"fr": "Cagnottes", "en": "Cagnottes"}, "code": "CAPETOWN"}, {"id": "g63", "icon": "heart", "price": 0, "group": true, "always": true, "name": {"fr": "Fonds anniversaire", "en": "Anniversary Fund"}, "desc": {"fr": "Cagnottes", "en": "Cagnottes"}, "code": "ANNIVERS"}],
 
 guests:[{"id": "h1", "code": "MN-1001", "household": "Helene", "side": "g", "group": "famille", "phone": "", "email": "", "seats": 2, "expected": 1, "preconfirmed": true, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1001_1", "name": "Helene"}, {"id": "m1001_2", "name": "Invité·e 2 de Helene"}], "sent": false}, {"id": "h2", "code": "MN-1002", "household": "Veronique", "side": "g", "group": "famille", "phone": "", "email": "", "seats": 4, "expected": 4, "preconfirmed": true, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1002_1", "name": "Veronique"}, {"id": "m1002_2", "name": "Invité·e 2 de Veronique"}, {"id": "m1002_3", "name": "Invité·e 3 de Veronique"}, {"id": "m1002_4", "name": "Invité·e 4 de Veronique"}], "sent": false}, {"id": "h3", "code": "MN-1003", "household": "Dieudonne", "side": "g", "group": "famille", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": true, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1003_1", "name": "Dieudonne"}], "sent": false}, {"id": "h4", "code": "MN-1004", "household": "Mirielle", "side": "g", "group": "famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": true, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1004_1", "name": "Mirielle"}, {"id": "m1004_2", "name": "Invité·e 2 de Mirielle"}], "sent": false}, {"id": "h5", "code": "MN-1005", "household": "Arlette", "side": "g", "group": "famille", "phone": "", "email": "", "seats": 3, "expected": 2, "preconfirmed": true, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1005_1", "name": "Arlette"}, {"id": "m1005_2", "name": "Invité·e 2 de Arlette"}, {"id": "m1005_3", "name": "Invité·e 3 de Arlette"}], "sent": false}, {"id": "h6", "code": "MN-1006", "household": "Daniel", "side": "g", "group": "famille", "phone": "", "email": "", "seats": 6, "expected": 6, "preconfirmed": true, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1006_1", "name": "Daniel"}, {"id": "m1006_2", "name": "Invité·e 2 de Daniel"}, {"id": "m1006_3", "name": "Invité·e 3 de Daniel"}, {"id": "m1006_4", "name": "Invité·e 4 de Daniel"}, {"id": "m1006_5", "name": "Invité·e 5 de Daniel"}, {"id": "m1006_6", "name": "Invité·e 6 de Daniel"}], "sent": false}, {"id": "h7", "code": "MN-1007", "household": "Eric", "side": "g", "group": "famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": true, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1007_1", "name": "Eric"}, {"id": "m1007_2", "name": "Invité·e 2 de Eric"}], "sent": false}, {"id": "h8", "code": "MN-1008", "household": "Thierry", "side": "g", "group": "famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": true, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1008_1", "name": "Thierry"}, {"id": "m1008_2", "name": "Invité·e 2 de Thierry"}], "sent": false}, {"id": "h9", "code": "MN-1009", "household": "Henri & Muclare", "side": "g", "group": "famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": true, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1009_1", "name": "Henri"}, {"id": "m1009_2", "name": "Muclare"}], "sent": false}, {"id": "h10", "code": "MN-1010", "household": "Toton Placide Kabala", "side": "g", "group": "famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1010_1", "name": "Toton Placide Kabala"}, {"id": "m1010_2", "name": "Invité·e 2 de Toton Placide Kabala"}], "sent": false}, {"id": "h11", "code": "MN-1011", "household": "Senior Kabala", "side": "g", "group": "famille", "phone": "", "email": "", "seats": 2, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1011_1", "name": "Senior Kabala"}, {"id": "m1011_2", "name": "Invité·e 2 de Senior Kabala"}], "sent": false}, {"id": "h12", "code": "MN-1012", "household": "Mirielle Banza", "side": "g", "group": "famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1012_1", "name": "Mirielle Banza"}, {"id": "m1012_2", "name": "Invité·e 2 de Mirielle Banza"}], "sent": false}, {"id": "h13", "code": "MN-1013", "household": "Tantine Dianda", "side": "g", "group": "famille", "phone": "", "email": "", "seats": 3, "expected": 3, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1013_1", "name": "Tantine Dianda"}, {"id": "m1013_2", "name": "Invité·e 2 de Tantine Dianda"}, {"id": "m1013_3", "name": "Invité·e 3 de Tantine Dianda"}], "sent": false}, {"id": "h14", "code": "MN-1014", "household": "Tonton Aidevous", "side": "g", "group": "famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1014_1", "name": "Tonton Aidevous"}, {"id": "m1014_2", "name": "Invité·e 2 de Tonton Aidevous"}], "sent": false}, {"id": "h15", "code": "MN-1015", "household": "Sophie", "side": "g", "group": "famille", "phone": "", "email": "", "seats": 4, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1015_1", "name": "Sophie"}, {"id": "m1015_2", "name": "Invité·e 2 de Sophie"}, {"id": "m1015_3", "name": "Invité·e 3 de Sophie"}, {"id": "m1015_4", "name": "Invité·e 4 de Sophie"}], "sent": false}, {"id": "h16", "code": "MN-1016", "household": "Pathy", "side": "g", "group": "famille", "phone": "", "email": "", "seats": 2, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1016_1", "name": "Pathy"}, {"id": "m1016_2", "name": "Invité·e 2 de Pathy"}], "sent": false}, {"id": "h17", "code": "MN-1017", "household": "Felix & Doris", "side": "g", "group": "famille", "phone": "", "email": "", "seats": 4, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1017_1", "name": "Felix"}, {"id": "m1017_2", "name": "Doris"}, {"id": "m1017_3", "name": "Invité·e 3 de Felix"}, {"id": "m1017_4", "name": "Invité·e 4 de Felix"}], "sent": false}, {"id": "h18", "code": "MN-1018", "household": "Nic-Land Kolela", "side": "g", "group": "amis", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1018_1", "name": "Nic-L"}], "sent": false}, {"id": "h19", "code": "MN-1019", "household": "Dieudonne Byabene", "side": "g", "group": "amis", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1019_1", "name": "Dieudonne Byabene"}, {"id": "m1019_2", "name": "Invité·e 2 de Dieudonne Byabene"}], "sent": false}, {"id": "h20", "code": "MN-1020", "household": "Ephraim Kalonji", "side": "g", "group": "amis", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1020_1", "name": "Ephraim Kalonji"}, {"id": "m1020_2", "name": "Invité·e 2 de Ephraim Kalonji"}], "sent": false}, {"id": "h21", "code": "MN-1021", "household": "Leon Chenge", "side": "g", "group": "amis", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1021_1", "name": "Leon Chenge"}, {"id": "m1021_2", "name": "Invité·e 2 de Leon Chenge"}], "sent": false}, {"id": "h22", "code": "MN-1022", "household": "Esther Chishibanji", "side": "g", "group": "amis", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1022_1", "name": "Esther Chishibanji"}], "sent": false}, {"id": "h23", "code": "MN-1023", "household": "Catherine Namayega", "side": "g", "group": "amis", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1023_1", "name": "Catherine Namayega"}], "sent": false}, {"id": "h24", "code": "MN-1024", "household": "Sophia M'zimbes", "side": "g", "group": "amis", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1024_1", "name": "Sophia M'zimbes"}], "sent": false}, {"id": "h25", "code": "MN-1025", "household": "Elie Wasa", "side": "g", "group": "amis", "phone": "", "email": "", "seats": 2, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1025_1", "name": "Elie Wasa"}, {"id": "m1025_2", "name": "Invité·e 2 de Elie Wasa"}], "sent": false}, {"id": "h26", "code": "MN-1026", "household": "Kevin Ejiba", "side": "g", "group": "amis", "phone": "", "email": "", "seats": 2, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1026_1", "name": "Kevin Ejiba"}, {"id": "m1026_2", "name": "Invité·e 2 de Kevin Ejiba"}], "sent": false}, {"id": "h27", "code": "MN-1027", "household": "Humphrey Bande", "side": "g", "group": "église", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1027_1", "name": "Humphrey Bande"}, {"id": "m1027_2", "name": "Invité·e 2 de Humphrey Bande"}], "sent": false}, {"id": "h28", "code": "MN-1028", "household": "Joelle & Joshua", "side": "g", "group": "église", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1028_1", "name": "Joelle"}, {"id": "m1028_2", "name": "Joshua"}], "sent": false}, {"id": "h29", "code": "MN-1029", "household": "Beks", "side": "g", "group": "église", "phone": "", "email": "", "seats": 1, "expected": 0, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1029_1", "name": "Beks"}], "sent": false}, {"id": "h30", "code": "MN-1030", "household": "Councilia", "side": "g", "group": "église", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1030_1", "name": "Councilia"}, {"id": "m1030_2", "name": "Invité·e 2 de Councilia"}], "sent": false}, {"id": "h31", "code": "MN-1031", "household": "Joshua & Debrorah Matesun", "side": "g", "group": "église", "phone": "", "email": "", "seats": 3, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1031_1", "name": "Joshua"}, {"id": "m1031_2", "name": "Debrorah Matesun"}, {"id": "m1031_3", "name": "Invité·e 3 de Joshua"}], "sent": false}, {"id": "h32", "code": "MN-1032", "household": "Domingo", "side": "g", "group": "église", "phone": "", "email": "", "seats": 2, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1032_1", "name": "Domingo"}, {"id": "m1032_2", "name": "Invité·e 2 de Domingo"}], "sent": false}, {"id": "h33", "code": "MN-1033", "household": "Julie-Ann", "side": "g", "group": "église", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1033_1", "name": "Julie-Ann"}, {"id": "m1033_2", "name": "Invité·e 2 de Julie-Ann"}], "sent": false}, {"id": "h34", "code": "MN-1034", "household": "Shalom Abiodun", "side": "g", "group": "église", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1034_1", "name": "Shalom Abiodun"}], "sent": false}, {"id": "h35", "code": "MN-1035", "household": "Neo", "side": "g", "group": "église", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1035_1", "name": "Neo"}], "sent": false}, {"id": "h36", "code": "MN-1036", "household": "Unathi Lu", "side": "g", "group": "église", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1036_1", "name": "Unathi Lu"}, {"id": "m1036_2", "name": "Invité·e 2 de Unathi Lu"}], "sent": false}, {"id": "h37", "code": "MN-1037", "household": "Mashall & Sibo", "side": "g", "group": "église", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1037_1", "name": "Mashall"}, {"id": "m1037_2", "name": "Sibo"}], "sent": false}, {"id": "h38", "code": "MN-1038", "household": "Mihlali", "side": "g", "group": "église", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1038_1", "name": "Mihlali"}, {"id": "m1038_2", "name": "Invité·e 2 de Mihlali"}], "sent": false}, {"id": "h39", "code": "MN-1039", "household": "Uche Ordor", "side": "g", "group": "église", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1039_1", "name": "Uche Ordor"}, {"id": "m1039_2", "name": "Invité·e 2 de Uche Ordor"}], "sent": false}, {"id": "h40", "code": "MN-1040", "household": "Hangala Siachiwena", "side": "g", "group": "église", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1040_1", "name": "Hangala Siachiwena"}], "sent": false}, {"id": "h41", "code": "MN-1041", "household": "Pepe Medar Kabamba", "side": "b", "group": "famille", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1041_1", "name": "Pepe Medar Kabamba"}], "sent": false}, {"id": "h42", "code": "MN-1042", "household": "Meme Agnes Ntumba", "side": "b", "group": "famille", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1042_1", "name": "Meme Agnes Ntumba"}], "sent": false}, {"id": "h43", "code": "MN-1043", "household": "Ghyslain Kabamba", "side": "b", "group": "famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1043_1", "name": "Ghyslain Kabamba"}, {"id": "m1043_2", "name": "Invité·e 2 de Ghyslain Kabamba"}], "sent": false}, {"id": "h44", "code": "MN-1044", "household": "Yolande Ntambwe", "side": "b", "group": "famille", "phone": "", "email": "", "seats": 3, "expected": 3, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1044_1", "name": "Yolande Ntambwe"}, {"id": "m1044_2", "name": "Invité·e 2 de Yolande Ntambwe"}, {"id": "m1044_3", "name": "Invité·e 3 de Yolande Ntambwe"}], "sent": false}, {"id": "h45", "code": "MN-1045", "household": "Cynthia Kabamba", "side": "b", "group": "famille", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1045_1", "name": "Cynthia Kabamba"}], "sent": false}, {"id": "h46", "code": "MN-1046", "household": "Gloria Kabamba", "side": "b", "group": "famille", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1046_1", "name": "Gloria Kabamba"}], "sent": false}, {"id": "h47", "code": "MN-1047", "household": "Claudine and Max Makelele", "side": "b", "group": "famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1047_1", "name": "Claudine"}, {"id": "m1047_2", "name": "Max Makelele"}], "sent": false}, {"id": "h48", "code": "MN-1048", "household": "Lydie Meta Mundele", "side": "b", "group": "famille", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1048_1", "name": "Lydie Meta Mundele"}], "sent": false}, {"id": "h49", "code": "MN-1049", "household": "Gedeon Buka", "side": "b", "group": "famille", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1049_1", "name": "Gedeon Buka"}], "sent": false}, {"id": "h50", "code": "MN-1050", "household": "Papa Theo", "side": "b", "group": "famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1050_1", "name": "Papa Theo"}, {"id": "m1050_2", "name": "Invité·e 2 de Papa Theo"}], "sent": false}, {"id": "h51", "code": "MN-1051", "household": "Papa Jean-Marie", "side": "b", "group": "famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1051_1", "name": "Papa Jean-Marie"}, {"id": "m1051_2", "name": "Invité·e 2 de Papa Jean-Marie"}], "sent": false}, {"id": "h52", "code": "MN-1052", "household": "Frida", "side": "b", "group": "famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1052_1", "name": "Frida"}, {"id": "m1052_2", "name": "Invité·e 2 de Frida"}], "sent": false}, {"id": "h53", "code": "MN-1053", "household": "Alda", "side": "b", "group": "famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1053_1", "name": "Alda"}, {"id": "m1053_2", "name": "Invité·e 2 de Alda"}], "sent": false}, {"id": "h54", "code": "MN-1054", "household": "Daniel and Josephine Mundele", "side": "b", "group": "famille", "phone": "", "email": "", "seats": 4, "expected": 4, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1054_1", "name": "Daniel"}, {"id": "m1054_2", "name": "Josephine Mundele"}, {"id": "m1054_3", "name": "Invité·e 3 de Daniel"}, {"id": "m1054_4", "name": "Invité·e 4 de Daniel"}], "sent": false}, {"id": "h55", "code": "MN-1055", "household": "Dad", "side": "b", "group": "famille", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1055_1", "name": "Dad"}], "sent": false}, {"id": "h56", "code": "MN-1056", "household": "Ginette Mundele", "side": "b", "group": "famille", "phone": "", "email": "", "seats": 3, "expected": 3, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1056_1", "name": "Ginette Mundele"}, {"id": "m1056_2", "name": "Invité·e 2 de Ginette Mundele"}, {"id": "m1056_3", "name": "Invité·e 3 de Ginette Mundele"}], "sent": false}, {"id": "h57", "code": "MN-1057", "household": "Maman Chantal Mundele", "side": "b", "group": "famille", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1057_1", "name": "Maman Chantal Mundele"}], "sent": false}, {"id": "h58", "code": "MN-1058", "household": "Maman Cisco", "side": "b", "group": "famille", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1058_1", "name": "Maman Cisco"}], "sent": false}, {"id": "h59", "code": "MN-1059", "household": "Nanamichele Shabani", "side": "b", "group": "famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1059_1", "name": "Nanamichele Shabani"}, {"id": "m1059_2", "name": "Invité·e 2 de Nanamichele Shabani"}], "sent": false}, {"id": "h60", "code": "MN-1060", "household": "Cyril & Belata Kiyoyo", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1060_1", "name": "Cyril"}, {"id": "m1060_2", "name": "Belata Kiyoyo"}], "sent": false}, {"id": "h61", "code": "MN-1061", "household": "Cyril & Ivette Mandombe", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1061_1", "name": "Cyril"}, {"id": "m1061_2", "name": "Ivette Mandombe"}], "sent": false}, {"id": "h62", "code": "MN-1062", "household": "Ephrem & Cathy Kabala", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1062_1", "name": "Ephrem"}, {"id": "m1062_2", "name": "Cathy Kabala"}], "sent": false}, {"id": "h63", "code": "MN-1063", "household": "Albert and Benita Mbelu", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1063_1", "name": "Albert"}, {"id": "m1063_2", "name": "Benita Mbelu"}], "sent": false}, {"id": "h64", "code": "MN-1064", "household": "Jimmy & Mado Amsini", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1064_1", "name": "Jimmy"}, {"id": "m1064_2", "name": "Mado Amsini"}], "sent": false}, {"id": "h65", "code": "MN-1065", "household": "Couple Holen", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1065_1", "name": "Couple Holen"}, {"id": "m1065_2", "name": "Invité·e 2 de Couple Holen"}], "sent": false}, {"id": "h66", "code": "MN-1066", "household": "Sandra et Junior LUPEMBA", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1066_1", "name": "Sandra"}, {"id": "m1066_2", "name": "Junior LUPEMBA"}], "sent": false}, {"id": "h67", "code": "MN-1067", "household": "Freddy & Liliane Kabambi", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1067_1", "name": "Freddy"}, {"id": "m1067_2", "name": "Liliane Kabambi"}], "sent": false}, {"id": "h68", "code": "MN-1068", "household": "Fonteine & Anguy Munkungapyo", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1068_1", "name": "Fonteine"}, {"id": "m1068_2", "name": "Anguy Munkungapyo"}], "sent": false}, {"id": "h69", "code": "MN-1069", "household": "Justine & Junior Kondjo", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1069_1", "name": "Justine"}, {"id": "m1069_2", "name": "Junior Kondjo"}], "sent": false}, {"id": "h70", "code": "MN-1070", "household": "Bruno and Lucette Kalala", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1070_1", "name": "Bruno"}, {"id": "m1070_2", "name": "Lucette Kalala"}], "sent": false}, {"id": "h71", "code": "MN-1071", "household": "Maître Laurent & Madame Yvonne Lukoji", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1071_1", "name": "Maître Laurent"}, {"id": "m1071_2", "name": "Madame Yvonne Lukoji"}], "sent": false}, {"id": "h72", "code": "MN-1072", "household": "Shaneil Dhevpal and Kashmeena Deonarain", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1072_1", "name": "Shaneil Dhevpal"}, {"id": "m1072_2", "name": "Kashmeena Deonarain"}], "sent": false}, {"id": "h73", "code": "MN-1073", "household": "Yusuf pathon and Nasreen Parker", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1073_1", "name": "Yusuf pathon"}, {"id": "m1073_2", "name": "Nasreen Parker"}], "sent": false}, {"id": "h74", "code": "MN-1074", "household": "Nessen Govander & Niroshini Naidoo", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1074_1", "name": "Nessen Govander"}, {"id": "m1074_2", "name": "Niroshini Naidoo"}], "sent": false}, {"id": "h75", "code": "MN-1075", "household": "Abdul Samad Mahomed and Ameera Jhetam", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1075_1", "name": "Abdul Samad Mahomed"}, {"id": "m1075_2", "name": "Ameera Jhetam"}], "sent": false}, {"id": "h76", "code": "MN-1076", "household": "Couple Gafoor", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1076_1", "name": "Couple Gafoor"}, {"id": "m1076_2", "name": "Invité·e 2 de Couple Gafoor"}], "sent": false}, {"id": "h77", "code": "MN-1077", "household": "Dr. J. Roy Moodley & Dr. Dianna Moodley", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1077_1", "name": "Dr. J. Roy Moodley"}, {"id": "m1077_2", "name": "Dr. Dianna Moodley"}], "sent": false}, {"id": "h78", "code": "MN-1078", "household": "couple Tshamala", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1078_1", "name": "couple Tshamala"}, {"id": "m1078_2", "name": "Invité·e 2 de couple Tshamala"}], "sent": false}, {"id": "h79", "code": "MN-1079", "household": "Azim litanga", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1079_1", "name": "Azim litanga"}, {"id": "m1079_2", "name": "Invité·e 2 de Azim litanga"}], "sent": false}, {"id": "h80", "code": "MN-1080", "household": "Adelphonse & Lina Lokangu", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1080_1", "name": "Adelphonse"}], "sent": false}, {"id": "h81", "code": "MN-1081", "household": "Joffrey & Evelyne Nimi", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1081_1", "name": "Joffrey"}, {"id": "m1081_2", "name": "Evelyne Nimi"}], "sent": false}, {"id": "h82", "code": "MN-1082", "household": "Professor Paulain", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1082_1", "name": "Professor Paulain"}, {"id": "m1082_2", "name": "Invité·e 2 de Professor Paulain"}], "sent": false}, {"id": "h83", "code": "MN-1083", "household": "Mamie et Yannick Kulula", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1083_1", "name": "Mamie"}], "sent": false}, {"id": "h84", "code": "MN-1084", "household": "couple Bongo", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1084_1", "name": "couple Bongo"}, {"id": "m1084_2", "name": "Invité·e 2 de couple Bongo"}], "sent": false}, {"id": "h85", "code": "MN-1085", "household": "Francine & alain kabongo", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1085_1", "name": "Francine"}, {"id": "m1085_2", "name": "alain kabongo"}], "sent": false}, {"id": "h86", "code": "MN-1086", "household": "Joel Muangalayi", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1086_1", "name": "Joel Muangalayi"}, {"id": "m1086_2", "name": "Invité·e 2 de Joel Muangalayi"}], "sent": false}, {"id": "h87", "code": "MN-1087", "household": "Maman Ida", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1087_1", "name": "Maman Ida"}], "sent": false}, {"id": "h88", "code": "MN-1088", "household": "Pastor & Maman Clarah", "side": "b", "group": "église", "phone": "", "email": "", "seats": 3, "expected": 3, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1088_1", "name": "Pastor"}, {"id": "m1088_2", "name": "Maman Clarah"}, {"id": "m1088_3", "name": "Invité·e 3 de Pastor"}], "sent": false}, {"id": "h89", "code": "MN-1089", "household": "Papa Claude & Maman Nally", "side": "b", "group": "église", "phone": "", "email": "", "seats": 3, "expected": 3, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1089_1", "name": "Papa Claude"}, {"id": "m1089_2", "name": "Maman Nally"}, {"id": "m1089_3", "name": "Invité·e 3 de Papa Claude"}], "sent": false}, {"id": "h90", "code": "MN-1090", "household": "Maman Angel", "side": "b", "group": "église", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1090_1", "name": "Maman Angel"}, {"id": "m1090_2", "name": "Invité·e 2 de Maman Angel"}], "sent": false}, {"id": "h91", "code": "MN-1091", "household": "Bijoux And Pappy Nzeza", "side": "b", "group": "église", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1091_1", "name": "Bijoux And Pappy Nzeza"}, {"id": "m1091_2", "name": "Invité·e 2 de Bijoux And Pappy Nzeza"}], "sent": false}, {"id": "h92", "code": "MN-1092", "household": "Mokambi", "side": "b", "group": "église", "phone": "", "email": "", "seats": 3, "expected": 3, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1092_1", "name": "Mokambi"}, {"id": "m1092_2", "name": "Invité·e 2 de Mokambi"}, {"id": "m1092_3", "name": "Invité·e 3 de Mokambi"}], "sent": false}, {"id": "h93", "code": "MN-1093", "household": "Maman Meya", "side": "b", "group": "église", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1093_1", "name": "Maman Meya"}], "sent": false}, {"id": "h94", "code": "MN-1094", "household": "Maman Lili", "side": "b", "group": "église", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1094_1", "name": "Maman Lili"}], "sent": false}, {"id": "h95", "code": "MN-1095", "household": "Sister Nozipho", "side": "b", "group": "église", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1095_1", "name": "Sister Nozipho"}], "sent": false}, {"id": "h96", "code": "MN-1096", "household": "Nomcebo", "side": "b", "group": "église", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1096_1", "name": "Nomcebo"}], "sent": false}, {"id": "h97", "code": "MN-1097", "household": "Maman Zouzou", "side": "b", "group": "église", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1097_1", "name": "Maman Zouzou"}, {"id": "m1097_2", "name": "Invité·e 2 de Maman Zouzou"}], "sent": false}, {"id": "h98", "code": "MN-1098", "household": "Sinead Gous", "side": "b", "group": "amis", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1098_1", "name": "Sinead Gous"}], "sent": false}, {"id": "h99", "code": "MN-1099", "household": "Laila Raoof", "side": "b", "group": "amis", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1099_1", "name": "Laila Raoof"}], "sent": false}],
 
@@ -1525,12 +1649,28 @@ const S = {config:null,dress:null,events:null,travel:null,faq:null,party:null,re
            seating:{}, rsvps:{}, gifts:[], book:[]};
 const PIX = {};   /* photoId -> dataURL, loaded on demand */
 
+function deepFill(base, over){
+  // anything the stored copy lacks falls back to the version shipped in the file
+  if(Array.isArray(base) || Array.isArray(over)) return (over===undefined||over===null)? base : over;
+  if(base && typeof base==="object" && over && typeof over==="object"){
+    const out = Object.assign({}, base);
+    for(const k of Object.keys(over)) out[k] = deepFill(base[k], over[k]);
+    return out;
+  }
+  return (over===undefined || over===null) ? base : over;
+}
 async function loadAll(){
+  await cloudBoot();
   const cfg0 = await sget("w:config", null);
   if(initCloud(cfg0 || DEFAULTS.config)) await cloudPullAll();
   for(const k of ["config","theme","sections","dress","events","travel","faq","party","registry","guests","tables","fixtures","vendors","photos"]){
-    S[k] = await sget("w:"+k, null) || JSON.parse(JSON.stringify(DEFAULTS[k]));
+    const stored = await sget("w:"+k, null);
+    const fresh  = JSON.parse(JSON.stringify(DEFAULTS[k]));
+    S[k] = (!stored) ? fresh
+         : (Array.isArray(fresh) ? stored : deepFill(fresh, stored));
   }
+  // a stored theme from an older version must not hide the photographs
+  if(!S.theme.heroPhotosSet && !(S.theme.heroPhotos||[]).length) S.theme.heroPhotos = DEFAULTS.theme.heroPhotos.slice();
   S.seating = await sget("w:seating", {}) || {};
   S.rsvps = {};
   for(const k of await slist("rsvp:")){ const v = await sget(k,null); if(v) S.rsvps[v.code] = v; }
@@ -1573,14 +1713,35 @@ async function loadAll(){
     }
     PIX[a.id] = artURI(a.kind, a.seed, a.w||1200, a.h||820);
   });
+  // The photographs shipped with the site must never depend on what an older stored copy contained.
+  const have = new Set(S.photos.map(p=>p.id)), hidden = new Set((S.config && S.config.hiddenPhotos) || []);
+  const BUILTIN = [
+    {id:"seed1",tag:"gallery",album:"a2",fr:"La demande officielle, chez les Mundele",en:"The formal asking, at the Mundele home"},
+    {id:"seed2",tag:"gallery",album:"a2",fr:"Les deux familles réunies",en:"Both families together"}]
+    .concat(SHOOT_LIST.map(a=>({id:a.id,tag:"gallery",album:"a1",fr:a.fr,en:a.en})))
+    .concat(ASSETS.map(a=>({id:a.id,tag:a.tag,album:"",fr:a.fr,en:a.en})));
+  let changed = false;
+  for(const b of BUILTIN){
+    if(!MEDIA[b.id] || have.has(b.id) || hidden.has(b.id)) continue;
+    S.photos.push({id:b.id, tag:b.tag, ok:true, album:b.album, shoot:true, file:true, by:"", caption:{fr:b.fr, en:b.en}});
+    changed = true;
+  }
+  const before = S.photos.length;
+  S.photos = S.photos.filter(p=> !(p.placeholder || p.art));      // the old drawn stand-ins no longer exist
+  if(S.photos.length !== before) changed = true;
+  if(changed && (!CLOUD.on || CLOUD.admin)) await sset("w:photos", S.photos);   // guests never write site content
 }
+const PIXMISS = {};
 async function save(k){ await sset("w:"+k, S[k]); }
 async function pix(id){
   if(!id) return "";
   if(MEDIA[id]) return mediaURL(id);
   if(PIX[id]) return PIX[id];
-  const v = await sget("photo:"+id, "");
-  PIX[id] = v || ""; return PIX[id];
+  if(PIXMISS[id] && Date.now()-PIXMISS[id] < 60000) return "";
+  let v = await sget("photo:"+id, "");
+  if(!v && CLOUD.on){ v = (await cloudGetOne("photo:"+id)) || ""; if(v) mem["photo:"+id] = v; }
+  if(v){ PIX[id] = v; return v; }
+  PIXMISS[id] = Date.now(); return "";
 }
 async function addPhoto(file, tag, by, maxW, q){
   const data = await shrink(file, maxW||1100, maxW||1100, q||0.7);
@@ -1621,7 +1782,7 @@ DEFAULTS.sections = {
 };
 
 Object.assign(DEFAULTS.config, {
-  sync:{url:"", anon:""},
+  sync:{url:"https://jmbkkjwpvhwpvawmsbbi.supabase.co", anon:"sb_publishable_dktHRoG3Am258TXKJLsmlA_c_lDU1NG"},
   usdRate:16.25,
   giftNote:{fr:"Les virements sont reçus sur le compte de S Simani, qui gère les cadeaux pour le compte des mariés. Votre nom apparaît dans la référence, afin que Mathi et Nanamichele sachent exactement de qui vient chaque cadeau.",
             en:"Transfers are received into the account of S Simani, who manages the gifts on the couple's behalf. Your name appears in the reference, so Mathi and Nanamichele know exactly who each gift came from."},
@@ -1643,6 +1804,12 @@ Object.assign(DEFAULTS.config, {
 const ART_SEEDS = [];
 
 Object.assign(T, {
+  "rs.fail":{fr:"Votre réponse n'a pas pu être envoyée. Vérifiez votre connexion et réessayez. Si cela continue, écrivez-nous.",
+             en:"Your reply could not be sent. Check your connection and try again. If it keeps happening, write to us."},
+  "gift.fail":{fr:"Votre cadeau n'a pas pu être enregistré. Vérifiez votre connexion et appuyez de nouveau sur le bouton.",
+               en:"Your gift could not be recorded. Check your connection and press the button again."},
+  "gb.fail":{fr:"Votre mot n'a pas pu être enregistré. Vérifiez votre connexion et réessayez.",
+             en:"Your note could not be saved. Check your connection and try again."},
   "reg.times":{fr:"Déjà offert __N__ fois",en:"Already gifted __N__ times"},
   "reg.once":{fr:"Déjà offert une fois",en:"Already gifted once"},
   "reg.also":{fr:"Offrir aussi",en:"Give this too"},
@@ -1736,6 +1903,7 @@ async function renderHero(){
   const ids = (th.heroPhotos && th.heroPhotos.length) ? th.heroPhotos : (th.heroPhotoId ? [th.heroPhotoId] : []);
   const srcs = [];
   for(const id of ids){ const u = await pix(id); if(u) srcs.push(u); }
+  if(!srcs.length && !th.heroPhotosSet){ for(const id of DEFAULTS.theme.heroPhotos){ const u = await pix(id); if(u) srcs.push(u); } }
   const hp = $("#heroPhoto");
   hp.style.opacity = String(th.heroDim ?? .62);
   if(!srcs.length){ hp.innerHTML = ""; hp.style.backgroundImage = "none"; }
@@ -1756,7 +1924,7 @@ async function renderHero(){
   $("#footHash").textContent = c.hashtag;
   $("#footQ").innerHTML = t("foot.q")+' <a href="mailto:'+esc(c.contact)+'">'+esc(c.contact)+"</a>";
   $("#storyText").innerHTML = L(c.story).split("\n\n").map(p=>'<p class="lede">'+esc(p)+"</p>").join("");
-  $("#storyImg").src = (await pix(c.storyPhotoId || "seed2")) || IMG.story;
+  $("#storyImg").src = (await pix(c.storyPhotoId || "story")) || (await pix("story"));
   $("#galIntro").textContent = L(c.galleryIntro);
   $("#dressIntro").textContent = t("dress.intro");
   $("#quoteText").textContent = "« "+L(c.quote)+" »";
@@ -1830,7 +1998,7 @@ function renderSchedule(){
 
 /* ---------- venue + plan ---------- */
 async function renderVenue(){
-  const v = S.config.venue, ph = (await pix(v.photoId)) || (await pix("artv"));
+  const v = S.config.venue, ph = (await pix(v.photoId)) || (await pix("venue"));
   const tIcons = [ICONS.plane, ICONS.doc, ICONS.house, ICONS.car, ICONS.coin, ICONS.child];
   $("#venueBlock").innerHTML =
     '<div class="venue-hero">'+(ph?'<img src="'+ph+'" alt="">':"")+
@@ -1877,16 +2045,23 @@ function showTable(id){
       :'<p class="small" style="margin-top:14px">'+A("Personne n'est encore placé ici.","Nobody is seated here yet.")+"</p>"));
 }
 function findSeat(){
-  const q = $("#seatQ").value.trim().toLowerCase(), box = $("#seatAns");
-  if(!q){ box.innerHTML=""; return; }
-  let hit = null;
+  const q = $("#seatQ").value.trim(), box = $("#seatAns");
+  if(!q){ box.innerHTML = ""; return; }
+  const tokens = norm(q).split(" ").filter(Boolean);
+  const found = [];
   Object.values(S.rsvps).forEach(r=> r.people.forEach(p=>{
-    if(p.attending && p.name.toLowerCase().includes(q) && S.seating[r.code+":"+p.id]) hit = {p, key:r.code+":"+p.id}; }));
-  if(!hit){ box.innerHTML = '<div class="msg">'+t("vn.seatno")+"</div>"; drawPlan($("#publicPlan"),false); return; }
-  const tb = S.tables.find(x=>x.id===S.seating[hit.key]);
-  const mates = tableOccupants(tb.id).filter(n=>n!==hit.p.name);
-  box.innerHTML = '<div class="msg good">'+t("vn.seatis",{"__N__":esc(hit.p.name),"__T__":esc(L(tb.name))})+
-    (mates.length? " "+t("vn.with")+" : "+mates.map(esc).join(", ") : "")+"</div>";
+    const key = r.code+":"+p.id;
+    if(!p.attending || !S.seating[key]) return;
+    const text = norm(p.name+" "+r.household);
+    if(tokens.every(t=> text.indexOf(t) > -1)) found.push({p:p, key:key});
+  }));
+  if(!found.length){ box.innerHTML = '<div class="msg">'+t("vn.seatno")+"</div>"; drawPlan($("#publicPlan"), false); return; }
+  const tbOf = f => S.tables.find(x=>x.id===S.seating[f.key]);
+  const lines = found.slice(0,6).map(f=> t("vn.seatis",{"__N__":esc(f.p.name),"__T__":esc(L(tbOf(f).name))}));
+  const first = found[0], tb = tbOf(first);
+  const mates = tableOccupants(tb.id).filter(n=>n!==first.p.name);
+  box.innerHTML = '<div class="msg good">'+lines.join("<br>")+(found.length>6?"<br>…":"")+
+    (found.length===1 && mates.length ? " "+t("vn.with")+" : "+mates.map(esc).join(", ") : "")+"</div>";
   drawPlan($("#publicPlan"), false, tb.id);
 }
 
@@ -1932,13 +2107,16 @@ async function renderGallery(){
   const ce = $("#galCredit");
   if(ce) ce.innerHTML = cr.name ? t("gl.credit")+" — "+(cr.url
     ? '<a href="'+esc(cr.url)+'" target="_blank" rel="noopener">'+esc(cr.name)+"</a>" : esc(cr.name)) : "";
-  galList = S.photos.filter(p=> p.tag==="gallery" && p.ok!==false &&
+  const cand = S.photos.filter(p=> p.tag==="gallery" && p.ok!==false &&
     (galAlbum==="all" || (galAlbum==="none" ? !p.album : p.album===galAlbum)));
+  const resolved = [];
+  for(const p of cand){ const src = await pix(p.id); if(src) resolved.push({p:p, src:src}); }
+  galList = resolved.map(x=>x.p);
   const host = $("#galGrid");
   if(!galList.length){ host.innerHTML = '<p class="lede center">'+t("gl.empty")+"</p>"; return; }
   const parts = [];
   for(let i=0;i<galList.length;i++){
-    const p = galList[i], src = await pix(p.id);
+    const p = galList[i], src = resolved[i].src;
     parts.push('<figure data-gi="'+i+'" class="rv d'+((i%4)+1)+'"><img src="'+src+'" alt="" loading="lazy">'+
       ((L(p.caption)||p.by)?"<figcaption>"+esc(L(p.caption)||"")+(p.by?" — "+esc(p.by):"")+"</figcaption>":"")+"</figure>");
   }
@@ -2076,16 +2254,19 @@ function openGift(id){
     showPayment(item, amount, name, $("#gMail").value.trim(), $("#gMsg").value.trim());
   };
 }
-function giftRef(name){
-  const base = "WG-" + (String(name).toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")
-                 .replace(/[^A-Z]/g,"").slice(0,12) || "INVITE");
-  const taken = new Set(S.gifts.filter(g=>g.status!=="rejected").map(g=>g.ref));
-  if(!taken.has(base)) return base;
-  for(let i=2;i<100;i++){ if(!taken.has(base+i)) return base+i; }
-  return base+Date.now().toString().slice(-3);
+function giftCode(itemId){
+  if(itemId==="honeymoon") return "WG-LUNE";
+  const item = S.registry.find(i=>i.id===itemId);
+  return "WG-" + (item && item.code ? item.code : String(itemId).toUpperCase());
+}
+function giftRef(itemId, name){
+  const base = giftCode(itemId);
+  const slug = String(name||"").toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+                 .replace(/[^A-Z]+/g," ").trim().replace(/\s+/g,"-").slice(0,22);
+  return slug ? base+"-"+slug : base;
 }
 function showPayment(item, amount, name, email, note){
-  const ref = giftRef(name);
+  const ref = giftRef(item.id, name);
   const b = S.config.bank;
   modal("<h3>"+t("gift.pay.h")+'</h3><p class="small" style="margin-bottom:20px">'+
     t("gift.pay.p",{"__A__":"<b>"+R(amount)+"</b> <span style=\"color:var(--ink-soft)\">("+USD(amount)+")</span>"})+"</p>"+
@@ -2102,20 +2283,32 @@ function showPayment(item, amount, name, email, note){
       '<p class="small" style="margin-bottom:10px">'+esc(L(S.config.altPay.note))+"</p>"+
       '<p class="small"><b>'+esc(S.config.altPay.name)+"</b><br>"+
       '<a href="tel:'+esc(String(S.config.altPay.phone).replace(/\s/g,""))+'">'+esc(S.config.altPay.phone)+"</a></p></div>" : "")+
-    '<div class="field"><label>'+t("gift.ref")+'</label><div style="display:flex;gap:8px">'+
-      '<input id="gRef" readonly value="'+esc(ref)+'" style="font-weight:600">'+
-      '<button class="btn sm quiet" id="gCopy"><span>'+t("gift.copy")+"</span></button></div></div>"+
+    '<div class="field"><label>'+t("gift.ref")+'</label><div style="display:flex;gap:8px;align-items:center">'+
+      '<span id="gRefPrefix" style="font-family:ui-monospace,Menlo,monospace;font-weight:700;white-space:nowrap">'+esc(giftCode(item.id))+"-</span>"+
+      '<input id="gRef" value="'+esc(String(name).toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+        .replace(/[^A-Za-z]+/g," ").trim().replace(/\s+/g,"-"))+'" style="font-weight:600;font-family:ui-monospace,Menlo,monospace">'+
+      '<button class="btn sm quiet" id="gCopy"><span>'+t("gift.copy")+"</span></button></div>"+
+      '<p class="hint">'+A("Le code est fixe ; ajustez votre nom si besoin, c\u2019est ce qui figure dans la référence du virement.",
+        "The code is fixed; adjust your name if you like \u2014 this is what goes in the transfer reference.")+"</p></div>"+
     (b.link?'<p class="small" style="margin:14px 0"><a href="'+esc(b.link)+'" target="_blank" rel="noopener">'+
       A("Ou payer par carte en ligne","Or pay by card online")+"</a></p>":"")+
     '<button class="btn" id="gDone" style="margin-top:8px"><span>'+t("gift.done")+"</span></button>");
-  $("#gCopy").onclick = async ()=>{ try{ await navigator.clipboard.writeText(ref);
+  $("#gCopy").onclick = async ()=>{ try{ await navigator.clipboard.writeText(giftCode(item.id)+"-"+$("#gRef").value);
     $("#gCopy").innerHTML = "<span>"+t("gift.copied")+"</span>"; }catch(e){} };
   $("#gDone").onclick = async ()=>{
-    const rec = {id:uid("gf"), item:item.id, amount, name, email, note, ref, status:"pending", at:new Date().toISOString()};
-    S.gifts.push(rec); await sset("gift:"+rec.id, rec);
+    const finalRef = giftCode(item.id) + ($("#gRef").value.trim() ? "-"+$("#gRef").value.trim() : "");
+    const rec = {id:uid("gf"), item:item.id, amount, name, email, note, ref:finalRef, status:"pending", at:new Date().toISOString()};
+    S.gifts.push(rec);
+    const saved = await sset("gift:"+rec.id, rec);
+    if(!saved){
+      S.gifts = S.gifts.filter(g=>g.id!==rec.id); localDrop("gift:"+rec.id);
+      const old = $("#gFail"); if(old) old.remove();
+      $("#gDone").insertAdjacentHTML("beforebegin", '<div class="msg bad" id="gFail">'+t("gift.fail")+"</div>");
+      return;
+    }
     renderRegistry(); await renderFund();
     modal("<h3>"+t("gift.thanks.h")+'</h3><p class="lede">'+t("gift.thanks.p")+
-      '</p><p class="small" style="margin-top:16px">'+t("gift.ref")+" : <b>"+esc(ref)+
+      '</p><p class="small" style="margin-top:16px">'+t("gift.ref")+" : <b>"+esc(finalRef)+
       '</b></p><button class="btn" style="margin-top:22px" onclick="closeModal()"><span>'+t("close")+"</span></button>");
   };
 }
@@ -2132,7 +2325,10 @@ async function signBook(){
   const name = $("#gbName").value.trim(), msg = $("#gbMsg").value.trim();
   if(!name||!msg){ $("#gbFeedback").innerHTML = '<div class="msg bad">'+t("gb.need")+"</div>"; return; }
   const rec = {id:uid("bk"), name, msg, ok:false, at:new Date().toISOString()};
-  S.book.push(rec); await sset("book:"+rec.id, rec);
+  S.book.push(rec);
+  const saved = await sset("book:"+rec.id, rec);
+  if(!saved){ S.book = S.book.filter(b=>b.id!==rec.id); localDrop("book:"+rec.id);
+    $("#gbFeedback").innerHTML = '<div class="msg bad">'+t("gb.fail")+"</div>"; renderBook(); return; }
   $("#gbName").value=""; $("#gbMsg").value="";
   $("#gbFeedback").innerHTML = '<div class="msg good">'+t("gb.thanks")+"</div>";
   renderBook();
@@ -2141,19 +2337,82 @@ async function signBook(){
 /* ---------- RSVP ---------- */
 let foundHouse = null;
 const eventTitle = id => { const e = S.events.find(x=>x.id===id); return e? L(e.title):id; };
-function rsvpSearch(){
-  const q = $("#rsvpCode").value.trim().toLowerCase(), box = $("#rsvpFindMsg");
-  if(!q){ box.innerHTML=""; return; }
-  const hits = S.guests.filter(h=> h.code.toLowerCase()===q || h.household.toLowerCase().includes(q) ||
-    h.people.some(p=>p.name.toLowerCase().includes(q)));
-  if(!hits.length){ box.innerHTML='<div class="msg bad">'+t("rs.none")+"</div>"; $("#rsvpForm").style.display="none"; return; }
-  if(hits.length>1){
-    box.innerHTML = '<div class="msg">'+t("rs.many")+"</div>"+hits.map(h=>
-      '<button class="btn ghost sm" data-pick="'+h.id+'" style="margin:0 8px 8px 0"><span>'+esc(h.household)+"</span></button>").join("");
-    $$("[data-pick]").forEach(b=> b.onclick = ()=> openRsvp(S.guests.find(h=>h.id===b.dataset.pick)));
-    $("#rsvpForm").style.display="none"; return;
+/* ---------- finding a guest by name ---------- */
+const norm = s => String(s==null ? "" : s).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+  .replace(/[^a-z0-9]+/g," ").trim();
+const codeKey = s => String(s||"").replace(/[^A-Za-z0-9]/g,"").toUpperCase();
+let gF = {q:"", side:"", rep:"", sent:"", grp:""};     // desk filters, kept while the list is redrawn
+let poolQ = "";                                         // seating pool search
+
+// true when two words differ by at most one letter (typo tolerance: Mirielle / Mireille)
+function oneEdit(a, b){
+  if(a === b) return true;
+  const la = a.length, lb = b.length; if(Math.abs(la-lb) > 1) return false;
+  let i = 0; while(i < la && i < lb && a[i] === b[i]) i++;
+  if(la === lb){
+    if(a.slice(i+1) === b.slice(i+1)) return true;                                   // one wrong letter
+    return a[i] === b[i+1] && a[i+1] === b[i] && a.slice(i+2) === b.slice(i+2);      // two neighbours swapped
   }
-  box.innerHTML=""; openRsvp(hits[0]);
+  return la > lb ? a.slice(i+1) === b.slice(i) : b.slice(i+1) === a.slice(i);        // one letter missing or extra
+}
+function guestText(h, withContact){
+  return norm(h.household+" "+h.people.map(p=>p.name).join(" ")+" "+h.code+
+    (withContact ? " "+(h.group||"")+" "+(h.phone||"")+" "+(h.email||"") : ""));
+}
+// Households that match, best first. Accents, capitals, word order and one wrong letter do not matter;
+// a code matches with or without the dash.
+function guestFind(q, withContact){
+  const tokens = norm(q).split(" ").filter(Boolean);
+  if(!tokens.length) return [];
+  const ck = codeKey(q);
+  const byCode = S.guests.filter(h=> codeKey(h.code) === ck);
+  if(byCode.length) return byCode;
+  const rows = S.guests.map(h=>{ const text = guestText(h, withContact); return {h:h, text:text, words:text.split(" ")}; });
+  const all = rows.filter(r=> tokens.every(t=> r.text.indexOf(t) > -1));
+  if(all.length) return all.map(r=>r.h);
+  // nothing holds every word (a full name against a household called by one first name, say):
+  // score how many words match, exactly or within one typo, and keep the best tier
+  const scored = rows.map(r=>{
+    let sc = 0;
+    tokens.forEach(t=>{
+      if(r.words.some(w=> w === t || (t.length >= 3 && w.indexOf(t) === 0))) sc += 1;
+      else if(t.length >= 4 && r.words.some(w=> oneEdit(t, w))) sc += 0.75;
+    });
+    return {h:r.h, sc:sc};
+  }).filter(x=> x.sc > 0);
+  if(!scored.length) return [];
+  const top = Math.max.apply(null, scored.map(x=>x.sc));
+  return scored.filter(x=> x.sc === top).map(x=>x.h);
+}
+function applyGuestFilter(){
+  const ids = norm(gF.q) ? new Set(guestFind(gF.q, true).map(h=>h.id)) : null;
+  let shown = 0, seats = 0;
+  $$("#cp-guests tbody tr[data-gid]").forEach(tr=>{
+    const ok = (!gF.side || tr.dataset.side === gF.side) && (!gF.rep || tr.dataset.rep === gF.rep) &&
+               (!gF.sent || tr.dataset.sent === gF.sent) && (!gF.grp || tr.dataset.grp === gF.grp) &&
+               (!ids || ids.has(tr.dataset.gid));
+    tr.style.display = ok ? "" : "none";
+    if(ok){ shown++; seats += Number(tr.dataset.seats) || 0; }
+  });
+  const c = $("#gCount");
+  if(c) c.textContent = shown+" "+A("sur","of")+" "+S.guests.length+" "+A("foyers","households")+" · "+seats+" "+A("places","seats");
+}
+
+function rsvpSearch(){
+  const raw = $("#rsvpCode").value.trim(), box = $("#rsvpFindMsg");
+  if(!raw){ box.innerHTML = ""; return; }
+  const byCode = S.guests.find(h=> codeKey(h.code) === codeKey(raw));
+  if(byCode){ box.innerHTML = ""; openRsvp(byCode); return; }
+  if(norm(raw).replace(/ /g,"").length < 3){
+    box.innerHTML = '<div class="msg">'+t("rs.short")+"</div>"; $("#rsvpForm").style.display = "none"; return; }
+  const hits = guestFind(raw, false);
+  if(!hits.length){ box.innerHTML = '<div class="msg bad">'+t("rs.none")+"</div>"; $("#rsvpForm").style.display = "none"; return; }
+  if(hits.length === 1){ box.innerHTML = ""; openRsvp(hits[0]); return; }
+  $("#rsvpForm").style.display = "none";
+  if(hits.length > 6){ box.innerHTML = '<div class="msg">'+t("rs.toomany")+"</div>"; return; }
+  box.innerHTML = '<div class="msg">'+t("rs.many")+"</div>"+hits.map(h=>
+    '<button class="btn ghost sm" data-pick="'+h.id+'" style="margin:0 8px 8px 0"><span>'+esc(h.household)+"</span></button>").join("");
+  $$("[data-pick]").forEach(b=> b.onclick = ()=> openRsvp(S.guests.find(h=>h.id===b.dataset.pick)));
 }
 function openRsvp(h){
   foundHouse = h;
@@ -2226,8 +2485,10 @@ async function submitRsvp(){
       pickup:$("#rsPickup").checked, room:$("#rsRoom").checked},
     contact:$("#rsContact").value.trim(), song:$("#rsSong").value.trim(), seatWith:$("#rsSeat").value.trim(),
     note:$("#rsNote").value.trim(), at:new Date().toISOString(), lang:LANG};
-  S.rsvps[h.code] = rec; await sset("rsvp:"+h.code, rec);
+  S.rsvps[h.code] = rec;
+  const saved = await sset("rsvp:"+h.code, rec);
   if($("#ivLog")) logInvites();
+  if(!saved){ $("#rsErr").innerHTML = '<div class="msg bad">'+t("rs.fail")+"</div>"; return; }
   $("#rsErr").innerHTML = '<div class="msg good">'+t("rs.sent")+"</div>";
   $("#rsSend").innerHTML = "<span>"+t("rs.update")+"</span>";
 }
@@ -2302,11 +2563,87 @@ function openConsole(){
   $("#console").classList.add("on"); document.body.style.overflow="hidden"; renderConsole();
 }
 function closeConsole(){ $("#console").classList.remove("on"); document.body.style.overflow=""; }
+/* ---------- database status, shown above every pane of the desk ---------- */
+function consoleStatusHTML(){
+  if(!CLOUD.on) return '<div class="msg">'+A("Base non connectée : tout reste dans ce navigateur.",
+    "Database not connected: everything stays in this browser.")+"</div>";
+  if(!CLOUD.hydrated) return '<div class="msg bad">'+A("La base ne répond pas depuis ce navigateur : ","The database is not answering from this browser: ")+
+      esc(CLOUD.lastError||"")+' <button class="tbtn" id="csGo">'+A("Vérifier la base","Check the database")+"</button></div>";
+  const dirty = Array.from(CLOUD.dirty);
+  if(dirty.length){
+    return '<div class="msg bad"><b>'+A("Pas enregistré dans la base : ","Not saved to the database: ")+dirty.length+" "+
+      A("élément(s)","item(s)")+"</b> ("+esc(dirty.slice(0,4).join(", "))+(dirty.length>4?"…":"")+").<br>"+
+      A("Ces modifications n'existent que dans ce navigateur et seront perdues s'il se ferme.",
+        "These changes exist only in this browser and will be lost if it closes.")+
+      (CLOUD.lastError ? '<br><span class="mini">'+esc(CLOUD.lastError)+"</span>" : "")+
+      '<br><button class="tbtn" id="csRetry" style="margin-top:8px">'+A("Réessayer maintenant","Retry now")+"</button> "+
+      '<button class="tbtn" id="csGo" style="margin-top:8px">'+A("Vérifier la base","Check the database")+"</button></div>";
+  }
+  if(!CLOUD.admin) return '<div class="msg bad">'+A(
+      "Aucune clé d'administration dans ce navigateur : vos modifications ne pourront pas être enregistrées dans la base. ",
+      "No admin key in this browser: your changes cannot be saved to the database. ")+
+      '<button class="tbtn" id="csGo">'+A("Ouvrir Données & sauvegarde","Open Data & backup")+"</button></div>";
+  return '<p class="mini" style="margin:0 0 14px">✓ '+A("Base connectée, modifications enregistrées","Database connected, changes saved")+
+    (CLOUD.lastSync ? " · "+A("lu à","read at")+" "+CLOUD.lastSync.toLocaleTimeString() : "")+"</p>";
+}
+function syncAlert(){
+  const con = $("#console"), el = $("#cstatus");
+  if(!con || !el || !con.classList.contains("on")) return;
+  el.innerHTML = consoleStatusHTML();
+  const r = $("#csRetry"); if(r) r.onclick = async ()=>{ await cloudRetryDirty(); syncAlert(); };
+  const g = $("#csGo"); if(g) g.onclick = ()=>{ CP = "sync"; renderConsole(); };
+  const b = $("#cbuild"); if(b) b.textContent = BUILD;
+}
+function renderCheckOut(out){
+  const mark = ok => ok===null||ok===undefined ? "·" : ok ? '<b style="color:#3F5E3B">✓</b>' : '<b style="color:#9D5B4E">✕</b>';
+  const row = (ok, label, detail)=> "<tr><td style=\"width:28px\">"+mark(ok)+"</td><td>"+label+
+    '</td><td class="mini">'+(detail||"")+"</td></tr>";
+  const adminOk = out.hasAdmin && out.write && out.readback;
+  const rows = [
+    row(out.read, A("Lecture de la base","Reading the database"),
+        out.read ? out.rows+" "+A("lignes","rows")+" ("+out.wrows+" "+A("de contenu du site","of site content")+")" : ""),
+    row(adminOk, A("Écriture avec la clé d'administration, puis relecture","Writing with the admin key, then reading it back"),
+        !out.hasAdmin ? A("aucune clé dans ce navigateur","no key in this browser") : (adminOk ? A("enregistrée et relue","saved and read back") : "")),
+    row(out.guest, A("Connexion côté invité","Guest-side connection"), esc(out.guestSource||"")),
+    row(out.guestWrite, A("Envoi d'une réponse côté invité","A guest sending a reply"), "")
+  ];
+  const warn = out.blobs > 0
+    ? '<p class="mini" style="margin-top:8px">'+out.blobs+" "+A("image(s) stockée(s) comme lignes dans la base. Ce sont d'anciennes copies si aucun invité n'a encore déposé de photo : vous pouvez les supprimer.",
+        "image(s) stored as database rows. These are old copies unless a guest has uploaded a photo: you can delete them.")+"</p>" : "";
+  const msg = out.errors.length
+    ? '<div class="msg bad" style="margin-top:10px">'+out.errors.map(esc).join("<br>")+"</div>"
+    : '<div class="msg good" style="margin-top:10px">'+A(
+        "Tout est en ordre : vos modifications sont enregistrées et les invités peuvent répondre.",
+        "All good: your changes are saved and guests can reply.")+"</div>";
+  return '<table class="t"><tbody>'+rows.join("")+"</tbody></table>"+warn+msg;
+}
+async function runSyncCheck(){
+  const box = $("#syCheckOut"); if(box) box.innerHTML = '<div class="msg">…</div>';
+  const out = await cloudCheck();
+  const b2 = $("#syCheckOut"); if(b2) b2.innerHTML = renderCheckOut(out);
+  syncAlert();
+}
+async function checkImages(){
+  const box = $("#phCheckOut"); if(!box) return;
+  const ids = Object.keys(MEDIA); let ok = 0; const bad = [];
+  box.innerHTML = '<div class="msg">…</div>';
+  await Promise.all(ids.map(id => new Promise(res=>{
+    const url = mediaURL(id), im = new Image(); let done = false;
+    const fin = v => { if(done) return; done = true; if(v) ok++; else bad.push(url); res(); };
+    im.onload = ()=> fin(true); im.onerror = ()=> fin(false); setTimeout(()=> fin(false), 8000);
+    im.src = url + (url.indexOf("?")>-1 ? "&" : "?") + "v=" + Date.now();
+  })));
+  box.innerHTML = '<div class="msg '+(bad.length?"bad":"good")+'">'+ok+" / "+ids.length+" "+A("images se chargent","images load")+
+    (bad.length ? "<br>"+A("Introuvables :","Not found:")+"<br>"+bad.map(esc).join("<br>")
+                : "<br>"+A("Les fichiers sont bien déployés.","The files are deployed correctly."))+"</div>";
+}
+
 function renderConsole(){
   $$("#console .cbar button[data-cp]").forEach(b=> b.classList.toggle("on", b.dataset.cp===CP));
   $$(".cpane").forEach(p=> p.classList.toggle("on", p.id==="cp-"+CP));
   ({dash:cDash,guests:cGuests,invites:cInvites,replies:cReplies,seating:cSeating,gifts:cGifts,
     photos:cPhotos,people:cPeople,book:cBook,vendors:cVendors,look:cLook,sync:cSync,content:cContent})[CP]();
+  syncAlert();
 }
 function tally(){
   const houses = S.guests.length; let heads=0,yes=0,no=0,replied=0,expect=0,preconf=0;
@@ -2379,7 +2716,9 @@ function cGuests(){
     const r = S.rsvps[h.code];
     const badge = !r ? '<span class="tag wait">'+A("En attente","Awaiting")+"</span>"
       : '<span class="tag '+(r.people.some(p=>p.attending)?"yes":"no")+'">'+r.people.filter(p=>p.attending).length+"/"+r.people.length+"</span>";
-    return "<tr><td><b>"+esc(h.household)+'</b><div class="mini">'+h.people.map(p=>esc(p.name)).join(" · ")+
+    const rep = !r ? "wait" : (r.people.some(p=>p.attending) ? "yes" : "no");
+    return '<tr data-gid="'+h.id+'" data-side="'+h.side+'" data-rep="'+rep+'" data-sent="'+(h.sent?"1":"0")+
+      '" data-grp="'+esc(norm(h.group||""))+'" data-seats="'+h.people.length+'"><td><b>'+esc(h.household)+'</b><div class="mini">'+h.people.map(p=>esc(p.name)).join(" · ")+
       '</div></td><td style="font-family:monospace">'+esc(h.code)+"</td><td>"+(h.side==="g"?A("Marié","Groom"):A("Mariée","Bride"))+
       '<div class="mini">'+esc(h.group||"")+"</div></td><td>"+h.people.length+'</td><td class="mini">'+
       (h.expected ?? h.people.length)+"</td><td>"+(h.preconfirmed?'<span class="tag yes">'+A("Oui","Yes")+"</span>":"")+
@@ -2387,7 +2726,21 @@ function cGuests(){
       '</td><td style="white-space:nowrap"><button class="tbtn" data-ge="'+h.id+'">'+A("Modifier","Edit")+
       '</button> <button class="tbtn" data-gw="'+h.id+'">WhatsApp</button> <button class="tbtn danger" data-gd="'+h.id+'">✕</button></td></tr>';
   }).join("");
+  const groups = Array.from(new Set(S.guests.map(h=>h.group||"").filter(Boolean)));
+  const opt = (v,l,cur)=> '<option value="'+esc(v)+'"'+(cur===v?" selected":"")+">"+esc(l)+"</option>";
   $("#cp-guests").innerHTML =
+    '<div class="cform" style="border-left:3px solid var(--accent)"><div class="row3" style="align-items:end">'+
+      '<div style="grid-column:span 2"><label>'+A("Rechercher un invité","Find a guest")+'</label><input id="gQ" autocomplete="off" value="'+esc(gF.q)+
+        '" placeholder="'+A("nom, prénom, code, téléphone… (avec ou sans accents)","name, first name, code, phone… (accents optional)")+'"></div>'+
+      '<div><label>'+A("Côté","Side")+'</label><select id="gSide">'+opt("",A("Tous","All"),gF.side)+opt("g",A("Marié","Groom"),gF.side)+opt("b",A("Mariée","Bride"),gF.side)+"</select></div>"+
+      '<div><label>'+A("Réponse en ligne","Online reply")+'</label><select id="gRep">'+opt("",A("Toutes","All"),gF.rep)+
+        opt("wait",A("En attente","Awaiting"),gF.rep)+opt("yes",A("Présents","Coming"),gF.rep)+opt("no",A("Excusés","Declined"),gF.rep)+"</select></div>"+
+      '<div><label>'+A("Invitation","Invitation")+'</label><select id="gSent">'+opt("",A("Toutes","All"),gF.sent)+
+        opt("0",A("À envoyer","To send"),gF.sent)+opt("1",A("Envoyée","Sent"),gF.sent)+"</select></div>"+
+      '<div><label>'+A("Groupe","Group")+'</label><select id="gGrp">'+opt("",A("Tous","All"),gF.grp)+
+        groups.map(g=>opt(norm(g),g,gF.grp)).join("")+"</select></div></div>"+
+      '<p class="mini" style="margin-top:10px"><span id="gCount"></span> <button class="tbtn" id="gClear" style="margin-left:8px">'+
+        A("Effacer les filtres","Clear filters")+"</button></p></div>"+
     '<div class="cform"><div class="row3">'+
       '<div><label>'+A("Nom de l'invitation (foyer)","Invitation name (household)")+'</label><input id="ngHouse"></div>'+
       '<div><label>'+A("Personnes, séparées par une virgule","People, comma separated")+'</label><input id="ngPeople"></div>'+
@@ -2417,6 +2770,10 @@ function cGuests(){
         '<table class="t"><thead><tr><th>'+A("Invitation","Invitation")+"</th><th>Code</th><th>"+A("Côté","Side")+
       "</th><th>"+A("Places","Seats")+"</th><th>"+A("Attendus","Expected")+"</th><th>"+A("Confirmé de vive voix","Confirmed in person")+
       "</th><th>"+A("Réponse en ligne","Online reply")+"</th><th></th></tr></thead><tbody>"+rows+"</tbody></table>";
+  $("#gQ").oninput = e=>{ gF.q = e.target.value; applyGuestFilter(); };
+  [["gSide","side"],["gRep","rep"],["gSent","sent"],["gGrp","grp"]].forEach(p=> $("#"+p[0]).onchange = e=>{ gF[p[1]] = e.target.value; applyGuestFilter(); });
+  $("#gClear").onclick = ()=>{ gF = {q:"", side:"", rep:"", sent:"", grp:""}; cGuests(); };
+  applyGuestFilter();
   $("#ngAdd").onclick = async ()=>{
     const house = $("#ngHouse").value.trim();
     const names = $("#ngPeople").value.split(",").map(s=>s.trim()).filter(Boolean);
@@ -2900,13 +3257,18 @@ function cSeating(){
         "Drag tables to lay out the room. Click a name then a table to seat them.")+"</span></div></div>"+
     '<div style="display:grid;grid-template-columns:250px 1fr;gap:16px;align-items:start" id="seatGrid">'+
       '<div class="pool"><h3>'+A("À placer","To be seated")+' <span class="mini">('+unseated.length+"/"+all.length+")</span></h3>"+
-      (unseated.length? unseated.map(p=>'<div class="pn" data-k="'+esc(p.key)+'">'+esc(p.name)+"<small>"+esc(p.house)+
-        "</small></div>"+(p.wants?'<p class="mini" style="margin:-3px 0 7px 6px">↳ '+esc(p.wants)+"</p>":"")).join("")
+      '<input id="poolQ" autocomplete="off" placeholder="'+A("Rechercher un nom…","Search a name…")+'" value="'+esc(poolQ)+'" style="margin:8px 0;width:100%">'+
+      (unseated.length? unseated.map(p=>'<div class="pnw" data-n="'+esc(norm(p.name+" "+p.house))+'"><div class="pn" data-k="'+esc(p.key)+'">'+esc(p.name)+"<small>"+esc(p.house)+
+        "</small></div>"+(p.wants?'<p class="mini" style="margin:-3px 0 7px 6px">↳ '+esc(p.wants)+"</p>":"")+"</div>").join("")
         :'<p class="mini">'+A("Tout le monde est placé.","Everyone is seated.")+"</p>")+"</div>"+
       '<div><div class="planwrap" id="adminPlan" style="height:560px"></div>'+
       '<div id="tableList" style="margin-top:14px"></div></div></div>';
   drawPlan($("#adminPlan"), true);
   renderTableList();
+  const applyPool = ()=>{ const tk = norm(poolQ).split(" ").filter(Boolean);
+    $$(".pnw").forEach(el=>{ el.style.display = tk.every(t=> el.dataset.n.indexOf(t) > -1) ? "" : "none"; }); };
+  $("#poolQ").oninput = e=>{ poolQ = e.target.value; applyPool(); };
+  applyPool();
   $$(".pn").forEach(el=> el.onclick = ()=>{ $$(".pn").forEach(n=>n.classList.remove("picked"));
     el.classList.add("picked"); picked = el.dataset.k; });
   $("#tbAdd").onclick = async ()=>{
@@ -3121,6 +3483,11 @@ function cPhotos(){
     '<div class="help">'+A(
       "Téléchargez vos photos depuis la galerie du photographe, puis déposez-les ici. Classez-les par album, choisissez celles qui défilent sur la page d'accueil, et celle qui accompagne votre histoire.",
       "Download your photographs from the photographer's gallery, then drop them here. Sort them into albums, choose which ones cycle on the home page, and which one sits beside your story.")+"</div>"+
+    '<div class="cform"><h3 style="margin-bottom:6px">'+A("Vérifier les images","Check the images")+"</h3>"+
+      '<p class="mini" style="margin-bottom:10px">'+A("Dossier utilisé","Folder in use")+" : <b>"+esc(mediaBase())+"</b> · "+
+        Object.keys(MEDIA).length+" "+A("fichiers attendus","files expected")+"</p>"+
+      '<button class="btn sm" id="phCheck"><span>'+A("Vérifier que toutes les images se chargent","Check that every image loads")+"</span></button>"+
+      '<div id="phCheckOut" style="margin-top:10px"></div></div>'+
     '<div class="cform"><h3 style="margin-bottom:8px">'+A("Ajouter des photos","Add photos")+"</h3>"+
       '<div class="row3"><div><label>'+A("Destination","Where")+'</label><select id="phTag">'+
         '<option value="gallery">'+A("Galerie","Gallery")+'</option>'+
@@ -3150,8 +3517,8 @@ function cPhotos(){
       '</button> <button class="btn sm" id="phAlbSave"><span>'+A("Enregistrer","Save")+"</span></button></div>"+
     '<div class="cform"><h3 style="margin-bottom:6px">'+A("Où sont rangées les photos","Where the photographs live")+"</h3>"+
       '<p class="mini" style="margin-bottom:10px">'+A(
-        "Les photographies ne sont plus dans le fichier du site : elles sont servies depuis Supabase Storage. Laissez vide pour utiliser automatiquement votre projet Supabase, ou indiquez une autre adresse.",
-        "The photographs no longer sit inside the website file: they are served from Supabase Storage. Leave this empty to use your Supabase project automatically, or give another address.")+"</p>"+
+        "Les photographies sont servies depuis le dossier media déposé à côté du site. Laissez ce champ vide, sauf si vous les hébergez ailleurs (Supabase Storage, CDN).",
+        "The photographs are served from the media folder deployed beside the site. Leave this empty unless you host them somewhere else (Supabase Storage, a CDN).")+"</p>"+
       '<input id="phBase" value="'+esc(S.config.mediaBase||"")+'" placeholder="'+esc(mediaBase())+'">'+
       '<p class="mini" style="margin-top:6px">'+A("Adresse utilisée","Address in use")+" : <b>"+esc(mediaBase())+"</b></p>"+
       '<button class="btn sm" id="phBaseSave" style="margin-top:10px"><span>'+A("Enregistrer","Save")+"</span></button> "+
@@ -3169,6 +3536,7 @@ function cPhotos(){
         (list.length?'<div class="thumbs" data-g="'+g+'"></div>':'<p class="mini">'+A("Aucune photo.","No photos.")+"</p>")+"</div>";
     }).join("");
 
+  $("#phCheck").onclick = checkImages;
   $("#phFile").onchange = async e=>{
     const tag = $("#phTag").value, alb = $("#phAlbum").value;
     const files = Array.from(e.target.files); let i = 0;
@@ -3235,6 +3603,7 @@ function cPhotos(){
     $$("[data-phd]",host).forEach(b=> b.onclick = async ()=>{
       if(!confirm(A("Supprimer cette photo ?","Delete this photo?"))) return;
       S.photos = S.photos.filter(p=>p.id!==b.dataset.phd);
+      if(MEDIA[b.dataset.phd]) S.config.hiddenPhotos = (S.config.hiddenPhotos||[]).concat([b.dataset.phd]);
       S.theme.heroPhotos = (S.theme.heroPhotos||[]).filter(x=>x!==b.dataset.phd);
       if(S.config.venue.photoId===b.dataset.phd) S.config.venue.photoId = "";
       await save("photos"); await save("theme"); await save("config");
@@ -3242,7 +3611,7 @@ function cPhotos(){
     $$("[data-phh]",host).forEach(c=> c.onchange = async ()=>{
       const set = new Set(S.theme.heroPhotos||[]);
       c.checked ? set.add(c.dataset.phh) : set.delete(c.dataset.phh);
-      S.theme.heroPhotos = Array.from(set).slice(0,5);
+      S.theme.heroPhotos = Array.from(set).slice(0,5); S.theme.heroPhotosSet = true;
       await save("theme"); await renderAll(); cPhotos(); });
     $$("[data-phs]",host).forEach(b=> b.onclick = async ()=>{
       S.config.storyPhotoId = b.dataset.phs; await save("config");
@@ -3389,7 +3758,8 @@ const SPECS = {
   faq:[{k:"q",bi:1,l:["Question","Question"]},{k:"a",bi:1,area:1,l:["Réponse","Answer"]}],
   dress:[{k:"who",bi:1,l:["Pour qui","For whom"]},{k:"h",bi:1,l:["Titre","Title"]},{k:"p",bi:1,area:1,l:["Consigne","Guidance"]},
          {k:"avoidLabel",bi:1,l:["À éviter","To avoid"]}],
-  registry:[{k:"icon",ty:"icon",l:["Image","Picture"]},{k:"price",ty:"number",l:["Prix (R)","Price (R)"]},
+  registry:[{k:"code",l:["Code de référence (WG-…)","Reference code (WG-…)"]},
+            {k:"icon",ty:"icon",l:["Image","Picture"]},{k:"price",ty:"number",l:["Prix (R)","Price (R)"]},
             {k:"group",ty:"check",l:["Participations multiples","Group gift"]},
             {k:"always",ty:"check",l:["Ne se ferme jamais","Never closes"]},
             {k:"multi",ty:"check",l:["Plusieurs personnes peuvent l\u2019offrir","Several people may give it"]},
@@ -3560,6 +3930,7 @@ function collectState(){
   return out;
 }
 async function exportAll(){
+  for(const p of S.photos){ if(!MEDIA[p.id] && !PIX[p.id]) await pix(p.id); }
   const data = collectState();
   for(const p of ["rsvp:","gift:","book:","photo:"])
     for(const k of await slist(p)){ if(!(k in data)){ const v = await sget(k, undefined); if(v!==undefined) data[k]=v; } }
@@ -3604,6 +3975,14 @@ function cSync(){
 
     '<div class="stats">'+Object.entries(counts).map(([k,v])=>stat(v,k)).join("")+"</div>"+
 
+    '<div class="cform" style="border-left:3px solid var(--accent)"><h3 style="margin-bottom:8px">'+A("Vérifier la base","Check the database")+"</h3>"+
+      '<p class="mini" style="margin-bottom:6px">'+A("Version du site","Site version")+" : <b>"+esc(BUILD)+"</b></p>"+
+      '<p class="mini" style="margin-bottom:10px">'+A(
+        "Teste la lecture, l'écriture avec votre clé d'administration (puis la relecture) et la connexion telle qu'un invité la vit. À lancer après chaque changement de clé.",
+        "Tests reading, writing with your admin key (then reading it back) and the connection exactly as a guest gets it. Run it after any key change.")+"</p>"+
+      '<button class="btn sm" id="syCheck"><span>'+A("Lancer la vérification","Run the check")+"</span></button> "+
+      '<button class="tbtn" id="syConnJson">'+A("Télécharger connection.json","Download connection.json")+"</button>"+
+      '<div id="syCheckOut" style="margin-top:12px"></div></div>'+
     '<div class="cform"><h3 style="margin-bottom:8px">'+A("État","Status")+"</h3><p>"+state+
       '<span class="mini" style="margin-left:10px">'+
       (CLOUD.on ? esc(CLOUD.url) : A("Aucune base connectée","No database connected"))+"</span></p>"+
@@ -3678,6 +4057,13 @@ function cSync(){
     try{ await navigator.clipboard.writeText(SQL_SETUP); $("#sySqlCopy").textContent = A("Copié","Copied"); }
     catch(e){ $("#sySql").select(); }
   };
+  $("#syCheck").onclick = runSyncCheck;
+  $("#syConnJson").onclick = ()=>{
+    const g = guestConnection();
+    const blob = new Blob([JSON.stringify({url:CLOUD.url||g.url, anon:CLOUD.anon||g.anon}, null, 2)], {type:"application/json"});
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "connection.json"; a.click();
+  };
+  if(CLOUD.on){ if(CLOUD.lastCheck) $("#syCheckOut").innerHTML = renderCheckOut(CLOUD.lastCheck); else runSyncCheck(); }
   $("#syRefresh").onclick = async ()=>{
     const ok = await cloudPullAll();
     if(ok){ await loadAll(); await renderAll(); }
@@ -3697,9 +4083,9 @@ function cSync(){
       n+" "+A("éléments envoyés","items pushed")+(bad? " · "+bad+" "+A("échecs","failed")+" — "+esc(CLOUD.lastError):"")+"</div>";
   };
   $("#syTest").onclick = async ()=>{
-    const r = await cloudTest($("#syUrl").value.trim(), $("#syAnon").value.trim());
-    $("#syMsg").innerHTML = '<div class="msg '+(r.ok?"good":"bad")+'">'+
-      (r.ok? A("Connexion réussie. La table est en place.","Connection good. The table is there.") : esc(r.msg))+"</div>";
+    $("#syMsg").innerHTML = '<div class="msg">…</div>';
+    const out = await cloudCheck({url:$("#syUrl").value.trim(), anon:$("#syAnon").value.trim(), admin:$("#syAdmin").value.trim()});
+    $("#syMsg").innerHTML = renderCheckOut(out);
   };
   $("#sySave").onclick = async ()=>{
     const url = $("#syUrl").value.trim(), anon = $("#syAnon").value.trim(), adm = $("#syAdmin").value.trim();
@@ -3707,17 +4093,18 @@ function cSync(){
     const r = await cloudTest(url, anon);
     if(!r.ok){ $("#syMsg").innerHTML = '<div class="msg bad">'+esc(r.msg)+"</div>"; return; }
     if(LS){ try{ adm ? LS.setItem(LSK, adm) : LS.removeItem(LSK); }catch(e){} }
-    S.config.sync = {url:url.replace(/\/+$/,""), anon};
+    S.config.sync = {url:url.replace(/\/+$/,""), anon:anon, user:true};
+    initCloud(S.config);                 // adopt the new keys before anything is written with them
     await save("config");
-    initCloud(S.config);
     await cloudPullAll();
-    $("#syMsg").innerHTML = '<div class="msg good">'+A("Branché. Utilisez « Envoyer » ci-dessus pour pousser vos données actuelles.",
-      "Connected. Use Push above to send your current data up.")+"</div>";
+    const out = await cloudCheck();
     cSync();
+    $("#syMsg").innerHTML = renderCheckOut(out);
   };
   $("#syOff").onclick = async ()=>{
     if(!confirm(A("Débrancher la base ? Le site repassera en mode navigateur seul.","Disconnect? The site goes back to this-browser-only."))) return;
-    S.config.sync = {url:"",anon:""}; await save("config");
+    S.config.sync = {url:"",anon:"",off:true};
+    if(LS) try{ LS.setItem("mn:w:config", JSON.stringify(S.config)); }catch(e){}
     if(LS) try{ LS.removeItem(LSK); }catch(e){}
     CLOUD.on = false; CLOUD.hydrated = false; CLOUD.url = ""; CLOUD.anon = ""; CLOUD.admin = "";
     cSync();
@@ -3742,10 +4129,11 @@ function cSync(){
     }
     if(keys.includes("photos")){ PIX.seed1 = PIX.seed1; }
     await loadAll(); await renderAll();
-    $("#syRstMsg").innerHTML = '<div class="msg '+(bad?"bad":"good")+'">'+
+    const resetMsg = '<div class="msg '+(bad?"bad":"good")+'">'+
       done+" "+A("ensembles remis à la version du fichier","sets reset to the file's version")+
-      (bad? " · "+bad+" "+A("échecs","failed"):"")+"</div>";
+      (bad? " · "+bad+" "+A("échecs","failed")+"<br>"+esc(CLOUD.lastError):"")+"</div>";
     cSync();
+    $("#syRstMsg").innerHTML = resetMsg;
   };
   $("#syExport").onclick = async ()=>{
     const n = await exportAll();
@@ -3756,8 +4144,8 @@ function cSync(){
     try{
       const n = await importAll(f, $("#syReplace").checked);
       await loadAll(); await renderAll();
-      $("#syIoMsg").innerHTML = '<div class="msg good">'+n+" "+A("éléments importés.","items imported.")+"</div>";
       cSync();
+      $("#syIoMsg").innerHTML = '<div class="msg good">'+n+" "+A("éléments importés.","items imported.")+"</div>";
     }catch(err){ $("#syIoMsg").innerHTML = '<div class="msg bad">'+esc(err.message)+"</div>"; }
   };
 }
@@ -3807,10 +4195,15 @@ function cSync(){
   if(m){ location.hash = "#rsvp"; setTimeout(()=>{ $("#rsvpCode").value = m[1]; rsvpSearch(); }, 200); }
   window.addEventListener("scroll", onScroll, {passive:true});
   setInterval(async ()=>{
-    if(CLOUD.on && $("#console").classList.contains("on")){
-      if(await cloudPullAll()){ await loadAll(); await renderAll(); }
-    }
+    if(!CLOUD.on || !$("#console").classList.contains("on")) return;
+    const ae = document.activeElement;
+    if(ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName) && $("#console").contains(ae)) return;  // never rebuild a form someone is typing in
+    if(CLOUD.dirty.size){ await cloudRetryDirty(); syncAlert(); return; }                         // never refresh over unsaved work
+    const sig = ()=> JSON.stringify([S.guests, S.rsvps, S.gifts, S.book, S.seating, S.registry, S.party, S.events, S.config, S.photos]);
+    const before = sig();
+    if(await cloudPullAll()){ await loadAll(); if(sig() !== before) await renderAll(); }
   }, 60000);
+  setInterval(()=>{ cloudRetryDirty(); }, 15000);
   setInterval(countdown, 30000);
   window.addEventListener("resize", ()=>{ if(location.hash==="#venue") drawPlan($("#publicPlan"), false); });
 })();
