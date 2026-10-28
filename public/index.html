@@ -1114,7 +1114,7 @@ const MEDIA = {"h1": "h1.jpg", "h2": "h2.jpg", "h3": "h3.jpg", "h4": "h4.jpg", "
 const SHOOT_LIST = [{"id": "s_857A2147", "fr": "Devant le cœur de roses", "en": "Before the heart of roses"}, {"id": "s_857A2148", "fr": "Devant le cœur de roses", "en": "Before the heart of roses"}, {"id": "s_857A2152", "fr": "Les fleurs", "en": "The flowers"}, {"id": "s_857A2158", "fr": "Assise, les roses dans les bras", "en": "Seated, roses in her arms"}, {"id": "s_857A2166", "fr": "Le rire qui a tout dit", "en": "The laugh that said everything"}, {"id": "s_857A2174", "fr": "Un instant à eux", "en": "A moment of their own"}, {"id": "s_857A2183", "fr": "Le baiser", "en": "The kiss"}, {"id": "s_857A2184", "fr": "Le baiser", "en": "The kiss"}, {"id": "s_857A2235", "fr": "Le champagne", "en": "Champagne"}, {"id": "s_857A2239", "fr": "Front contre front", "en": "Forehead to forehead"}, {"id": "s_857A2242", "fr": "Elle, lui, et rien d'autre", "en": "Her, him, and nothing else"}, {"id": "s_857A2246", "fr": "Les yeux dans les yeux", "en": "Eye to eye"}, {"id": "s_DSC02026", "fr": "L'escalier, avant tout", "en": "The staircase, before everything"}, {"id": "s_DSC02044", "fr": "Les yeux bandés", "en": "Blindfolded"}, {"id": "s_DSC02053", "fr": "Le oui", "en": "The yes"}, {"id": "s_DSC02083", "fr": "Un genou à terre", "en": "Down on one knee"}, {"id": "s_DSC02104", "fr": "L'étreinte", "en": "The embrace"}, {"id": "s_DSC02107", "fr": "« Will you marry me »", "en": "« Will you marry me »"}, {"id": "s_DSC02113", "fr": "La demande", "en": "The proposal"}, {"id": "s_DSC02114", "fr": "La bague", "en": "The ring"}, {"id": "s_DSC02117", "fr": "Fiancés", "en": "Engaged"}, {"id": "s_DSC02128", "fr": "Main dans la main", "en": "Hand in hand"}, {"id": "s_DSC02141", "fr": "Portée", "en": "Carried"}];
 
 /* ---------- cloud sync (Supabase REST, no SDK, no build step) ---------- */
-const BUILD = "28 oct. 2026, r11";
+const BUILD = "28 oct. 2026, r12";
 const CLOUD = {url:"", anon:"", admin:"", on:false, hydrated:false, lastError:"", lastSync:null,
                dirty:new Set(), errLog:[], boot:null, bootTried:false, lastCheck:null};
 const LSK = "mn-admin-key";
@@ -1447,29 +1447,9 @@ const T = {
               en:"Several invitations match. Add your first name and surname to narrow it down."},
 "rs.many":{fr:"Plusieurs invitations correspondent. Choisissez la vôtre :",en:"Several match. Choose yours:"},
 "rs.hello":{fr:"Bonjour",en:"Hello"},"rs.invited":{fr:"Invitation",en:"Invitation"},
-"rs.each":{fr:"Merci de répondre pour chaque personne.",en:"Please answer for each person."},
-"rs.yes":{fr:"Sera présent·e",en:"Will attend"},"rs.no":{fr:"Ne pourra pas venir",en:"Cannot make it"},
-"rs.meal":{fr:"Repas",en:"Meal"},"rs.meal.beef":{fr:"Viande",en:"Beef"},"rs.meal.chicken":{fr:"Poulet",en:"Chicken"},
-"rs.meal.fish":{fr:"Poisson",en:"Fish"},"rs.meal.veg":{fr:"Végétarien",en:"Vegetarian"},
-"rs.diet":{fr:"Allergies, régime ou besoin d'accès",en:"Allergies, diet or access needs"},
-"rs.dietph":{fr:"Facultatif",en:"Optional"},
-"rs.events":{fr:"Les moments auxquels vous serez des nôtres",en:"The moments you'll join us for"},
-"rs.contact":{fr:"Votre e-mail ou WhatsApp",en:"Your email or WhatsApp"},
-"rs.contactph":{fr:"Pour vous envoyer les adresses exactes",en:"So we can send exact addresses"},
-"rs.song":{fr:"Un morceau qui vous fera danser",en:"One song that'll get you dancing"},
-"rs.songph":{fr:"Titre et artiste",en:"Title and artist"},
-"rs.note":{fr:"Un mot pour Mathi et Nana",en:"A word for Mathi and Nana"},
-"rs.logi":{fr:"Votre voyage",en:"Your travel"},
-"rs.arrive":{fr:"Date d'arrivée",en:"Arrival date"},"rs.flight":{fr:"Numéro de vol",en:"Flight number"},
-"rs.shuttle":{fr:"J'aimerais la navette hôtel ⇄ réception",en:"I'd like the hotel ⇄ reception shuttle"},
-"rs.pickup":{fr:"J'aimerais être récupéré à l'aéroport",en:"I'd like an airport pick-up"},
-"rs.room":{fr:"Je souhaite une chambre dans le bloc réservé",en:"I'd like a room in the reserved block"},
-"rs.seatwith":{fr:"Avec qui aimeriez-vous être assis ?",en:"Who would you like to sit with?"},
 "rs.send":{fr:"Envoyer ma réponse",en:"Send my reply"},"rs.update":{fr:"Modifier ma réponse",en:"Change my reply"},
-"rs.sent":{fr:"C'est enregistré. Merci — nous avons hâte.",en:"Recorded. Thank you — we can't wait."},
 "rs.already":{fr:"Vous avez répondu le __D__. Vous pouvez modifier ci-dessous.",en:"You replied on __D__. You can change it below."},
 "rs.back":{fr:"Chercher une autre invitation",en:"Look up another invitation"},
-"rs.needname":{fr:"Indiquez qui sera présent avant d'envoyer.",en:"Say who's attending before sending."},
 "foot.admin":{fr:"Espace des mariés",en:"Couple's desk"},"foot.q":{fr:"Une question ? Écrivez-nous.",en:"A question? Write to us."},
 "cd.days":{fr:"jours",en:"days"},"cd.day":{fr:"jour",en:"day"},"cd.hours":{fr:"heures",en:"hours"},
 "cd.today":{fr:"C'est aujourd'hui.",en:"It's today."},"cd.past":{fr:"Merci d'avoir été là.",en:"Thank you for being there."},
@@ -1590,24 +1570,22 @@ events:[
 
 travel:[
  {id:"t1",icon:"✈",h:{fr:"Arriver par avion",en:"Arriving by air"},
-  p:{fr:"L'aéroport King Shaka (DUR) est à 35 minutes du lieu. Depuis Kinshasa, il n'y a pas de vol direct : comptez 4 h jusqu'à Johannesburg, puis 1 h jusqu'à Durban. Indiquez votre vol dans le formulaire de réponse — nous organisons les navettes des 3 et 4 mars.",en:"King Shaka airport (DUR) is 35 minutes from the venue. There is no direct flight from Kinshasa: allow 4 hours to Johannesburg, then 1 hour on to Durban. Put your flight in the RSVP form — we're arranging shuttles on 3 and 4 March."}},
+  p:{fr:"L'aéroport King Shaka (DUR) est à 35 minutes du lieu. Depuis Kinshasa, il n'y a pas de vol direct : comptez 4 h jusqu'à Johannesburg, puis 1 h jusqu'à Durban.",en:"King Shaka airport (DUR) is 35 minutes from the venue. There is no direct flight from Kinshasa: allow 4 hours to Johannesburg, then 1 hour on to Durban."}},
  {id:"t2",icon:"⌁",h:{fr:"Visa pour l'Afrique du Sud",en:"South African visa"},
-  p:{fr:"Les ressortissants de la RDC ont besoin d'un visa de visiteur. Déposez au VFS au moins huit semaines à l'avance. Nous fournissons lettre d'invitation et preuve d'hébergement — demandez-les tôt.",en:"DRC nationals need a visitor's visa. Lodge with VFS at least eight weeks ahead. We'll provide an invitation letter and proof of accommodation — ask early."}},
- {id:"t3",icon:"⌂",h:{fr:"Se loger",en:"Where to stay"},
-  p:{fr:"Un bloc de chambres est réservé à trois niveaux de prix, à moins de dix minutes. Cochez la case dans votre réponse et nous vous envoyons le lien et le code.",en:"A block of rooms is held at three price levels, all within ten minutes. Tick the box in your reply and we'll send the link and code."}},
+  p:{fr:"Les ressortissants de la RDC ont besoin d'un visa de visiteur. Déposez au VFS au moins huit semaines à l'avance. Nous pouvons fournir une lettre d'invitation : demandez-la tôt.",en:"DRC nationals need a visitor's visa. Lodge with VFS at least eight weeks ahead. We can provide an invitation letter: ask early."}},
  {id:"t4",icon:"⇄",h:{fr:"Se déplacer",en:"Getting around"},
-  p:{fr:"Uber et Bolt fonctionnent partout et coûtent peu. Une navette fera l'aller-retour hôtel ⇄ réception le samedi soir : ne prenez pas le volant.",en:"Uber and Bolt work everywhere and cost little. A shuttle runs hotel ⇄ reception on Saturday night: don't drive."}},
+  p:{fr:"Uber et Bolt fonctionnent partout et coûtent peu. Ne prenez pas le volant après la réception.",en:"Uber and Bolt work everywhere and cost little. Please don't drive after the reception."}},
  {id:"t5",icon:"₵",h:{fr:"Argent & pratique",en:"Money & practicalities"},
   p:{fr:"Monnaie : le rand (ZAR). La carte passe presque partout, gardez un peu de liquide. Prises type M à trois grosses broches. Mars à Durban, c'est la fin de l'été subtropical : 27–31 °C, très humide, averses en fin d'après-midi, et une mer à 26 °C. Prévoyez léger, et un maillot.",en:"Currency: the rand (ZAR). Cards work almost everywhere, keep a little cash. Type M three-large-pin plugs. March in Durban is late subtropical summer: 27–31 °C, very humid, late-afternoon showers, and a 26 °C sea. Pack light, and bring a swimsuit."}},
  {id:"t6",icon:"☺",h:{fr:"Les enfants",en:"Children"},
-  p:{fr:"La dot et le brunch sont ouverts à toute la famille. Le samedi soir est réservé aux adultes, sauf mention sur votre invitation. Une garde est organisée à l'hôtel : dites-le-nous dans votre réponse.",en:"The dot and the brunch are open to everyone. Saturday evening is adults-only unless your invitation says otherwise. Childcare is arranged at the hotel: tell us in your reply."}}
+  p:{fr:"La dot et le brunch sont ouverts à toute la famille. Le samedi soir est réservé aux adultes, sauf mention sur votre invitation.",en:"The dot and the brunch are open to everyone. Saturday evening is adults-only unless your invitation says otherwise."}}
 ],
 
 faq:[
  {q:{fr:"En quelle langue se déroulera la journée ?",en:"What language will the day be in?"},
   a:{fr:"Les deux. La bénédiction et les discours passent du français à l'anglais, avec du lingala quand l'émotion l'emporte. Ce site bascule aussi : le bouton FR/EN est en haut.",en:"Both. The blessing and speeches move between French and English, with Lingala when feeling takes over. This site switches too — the FR/EN button is at the top."}},
  {q:{fr:"Puis-je venir accompagné ?",en:"May I bring someone?"},
-  a:{fr:"Votre invitation nomme précisément les personnes conviées. Si un accompagnant est prévu, il apparaît sur votre page de réponse.",en:"Your invitation names exactly who's invited. If a guest is included, they appear on your reply page."}},
+  a:{fr:"Votre invitation précise exactement combien de personnes sont conviées. Si vous avez une question, écrivez-nous.",en:"Your invitation says exactly how many people are invited. If you have a question, write to us."}},
  {q:{fr:"À quelle heure dois-je vraiment arriver ?",en:"What time should I actually arrive?"},
   a:{fr:"À l'heure indiquée. Nous le disons avec tout l'amour possible : la bénédiction commence à l'heure et les portes se ferment.",en:"At the time printed. We say this with all possible love: the blessing starts on time and the doors close."}},
  {q:{fr:"Et si je ne peux pas voyager ?",en:"What if I can't travel?"},
@@ -1644,8 +1622,7 @@ vendors:[
  {id:"v2",role:{fr:"Traiteur",en:"Caterer"},name:"",phone:"",cost:0,paid:0,notes:""},
  {id:"v3",role:{fr:"DJ / orchestre",en:"DJ / band"},name:"",phone:"",cost:0,paid:0,notes:""},
  {id:"v4",role:{fr:"Décoration & fleurs",en:"Decor & flowers"},name:"",phone:"",cost:0,paid:0,notes:""},
- {id:"v5",role:{fr:"Gâteau",en:"Cake"},name:"",phone:"",cost:0,paid:0,notes:""},
- {id:"v6",role:{fr:"Transport & navettes",en:"Transport & shuttles"},name:"",phone:"",cost:0,paid:0,notes:""}
+ {id:"v5",role:{fr:"Gâteau",en:"Cake"},name:"",phone:"",cost:0,paid:0,notes:""}
 ],
 
 photos:[]
@@ -1710,6 +1687,7 @@ async function loadAll(){
     PIX[a.id] = artURI(a.kind, a.seed, a.w||1200, a.h||820);
   });
   upgradeIcons();
+  upgradeContent();
   // The photographs shipped with the site must never depend on what an older stored copy contained.
   const have = new Set(S.photos.map(p=>p.id)), hidden = new Set((S.config && S.config.hiddenPhotos) || []);
   const BUILTIN = [
@@ -1731,6 +1709,29 @@ async function loadAll(){
 const PIXMISS = {};
 const ICON_UPGRADE = {"g01": ["chair", "sofa"], "g02": ["chair", "table"], "g03": ["chair", "cabinet"], "g04": ["chair", "table"], "g05": ["chair", "chair"], "g06": ["doc", "shelf"], "g07": ["plate", "mirror"], "g08": ["house", "lamp"], "g09": ["micro", "fridge"], "g12": ["mixer", "blender"], "g23": ["mixer", "citrus"], "g24": ["coin", "scale"], "g25": ["pot", "drop"], "g28": ["plate", "bowl"], "g29": ["plate", "cutlery"], "g30": ["plate", "tumbler"], "g31": ["plate", "wine"], "g33": ["plate", "platter"], "g34": ["plate", "bowl"], "g35": ["plate", "bowl"], "g36": ["pot", "bakedish"], "g38": ["pot", "pan"], "g39": ["plate", "knife"], "g40": ["plate", "board"], "g41": ["plate", "cup"], "g42": ["micro", "box"], "g43": ["pot", "spices"], "g44": ["pot", "cutlery"], "g45": ["plate", "rack"], "g47": ["washer", "dryer"], "g48": ["towel", "iron"], "g49": ["towel", "ironboard"], "g52": ["micro", "tv"], "g53": ["micro", "soundbar"], "g54": ["micro", "speaker"], "g55": ["car", "box"], "g56": ["car", "truck"], "g58": ["chair", "sofa"], "g59": ["micro", "fridge"], "g60": ["house", "key"], "g62": ["plane", "mountain"], "g63": ["heart", "rings"]};
 function upgradeIcons(){ (S.registry||[]).forEach(i=>{ const u = ICON_UPGRADE[i.id]; if(u && i.icon === u[0]) i.icon = u[1]; }); }
+const CONTENT_FIXES = [
+  [/\s*Indiquez votre vol dans le formulaire de réponse[^.]*\./g, ""],
+  [/\s*Put your flight in the RSVP form[^.]*\./g, ""],
+  [/Nous fournissons lettre d'invitation et preuve d'hébergement[^.]*\./g, "Nous pouvons fournir une lettre d'invitation : demandez-la tôt."],
+  [/We'll provide an invitation letter and proof of accommodation[^.]*\./g, "We can provide an invitation letter: ask early."],
+  [/Une navette fera[^.]*\./g, "Ne prenez pas le volant après la réception."],
+  [/A shuttle runs[^.]*\./g, "Please don't drive after the reception."],
+  [/\s*Une garde est organisée à l'hôtel[^.]*\./g, ""],
+  [/\s*Childcare is arranged at the hotel[^.]*\./g, ""],
+  [/Votre invitation nomme précisément les personnes conviées\.\s*Si un accompagnant est prévu[^.]*\./g, "Votre invitation précise exactement combien de personnes sont conviées. Si vous avez une question, écrivez-nous."],
+  [/Your invitation names exactly who's invited\.\s*If a guest is included[^.]*\./g, "Your invitation says exactly how many people are invited. If you have a question, write to us."]
+];
+function fixText(v){
+  if(typeof v === "string"){ CONTENT_FIXES.forEach(f=>{ v = v.replace(f[0], f[1]); }); return v; }
+  if(Array.isArray(v)) return v.map(fixText);
+  if(v && typeof v === "object"){ const o = {}; Object.keys(v).forEach(k=>{ o[k] = fixText(v[k]); }); return o; }
+  return v;
+}
+function upgradeContent(){
+  S.travel  = fixText((S.travel||[]).filter(c=> !(c.id==="t3" && /bloc de chambres|block of rooms/i.test(JSON.stringify(c.p||{})))));
+  S.faq     = fixText(S.faq||[]);
+  S.vendors = (S.vendors||[]).filter(v=> !(v.id==="v6" && !v.name && !Number(v.cost) && !Number(v.paid)));
+}
 async function save(k){ await sset("w:"+k, S[k]); }
 async function pix(id){
   if(!id) return "";
@@ -1803,6 +1804,19 @@ Object.assign(DEFAULTS.config, {
 const ART_SEEDS = [];
 
 Object.assign(T, {
+  "rs.for1":{fr:"Invitation pour une personne",en:"Invitation for one guest"},
+  "rs.forN":{fr:"Invitation pour __N__ personnes",en:"Invitation for __N__ guests"},
+  "rs.q":{fr:"Serez-vous des nôtres ?",en:"Will you be joining us?"},
+  "rs.yes1":{fr:"Oui, je serai là",en:"Yes, I'll be there"},
+  "rs.yesN":{fr:"Oui, nous serons là",en:"Yes, we'll be there"},
+  "rs.no1":{fr:"Non, je ne pourrai pas venir",en:"No, I can't make it"},
+  "rs.noN":{fr:"Non, nous ne pourrons pas venir",en:"No, we can't make it"},
+  "rs.allergy1":{fr:"Êtes-vous allergique à un aliment ?",en:"Are you allergic to any food?"},
+  "rs.allergyN":{fr:"Quelqu'un est-il allergique à un aliment ?",en:"Is anyone allergic to any food?"},
+  "rs.allergyph":{fr:"Si oui, lequel ? Sinon, laissez vide.",en:"If so, which one? Otherwise leave blank."},
+  "rs.choose":{fr:"Choisissez oui ou non avant d'envoyer.",en:"Please choose yes or no before sending."},
+  "rs.sentyes":{fr:"C'est enregistré. Merci, nous avons hâte de vous voir.",en:"Saved. Thank you, we can't wait to see you."},
+  "rs.sentno":{fr:"C'est enregistré. Merci de nous avoir prévenus, vous nous manquerez.",en:"Saved. Thank you for letting us know, you will be missed."},
   "gl.fail":{fr:"Les photos ne se chargent pas pour le moment. Rechargez la page dans quelques instants.",
              en:"The photographs are not loading right now. Please reload the page in a moment."},
   "rs.fail":{fr:"Votre réponse n'a pas pu être envoyée. Vérifiez votre connexion et réessayez. Si cela continue, écrivez-nous.",
@@ -2461,82 +2475,47 @@ function rsvpSearch(){
     '<button class="btn ghost sm" data-pick="'+h.id+'" style="margin:0 8px 8px 0"><span>'+esc(h.household)+"</span></button>").join("");
   $$("[data-pick]").forEach(b=> b.onclick = ()=> openRsvp(S.guests.find(h=>h.id===b.dataset.pick)));
 }
+// Old replies carry the allergy per person; new ones carry it once for the invitation.
+function rsvpAllergy(r){ return r.allergy != null ? String(r.allergy) : (r.people||[]).map(p=>p.diet).filter(Boolean).join(", "); }
 function openRsvp(h){
   foundHouse = h;
-  const prev = S.rsvps[h.code];
-  const meals = [["beef","rs.meal.beef"],["chicken","rs.meal.chicken"],["fish","rs.meal.fish"],["veg","rs.meal.veg"]];
-  const people = h.people.map(p=>{
-    const pv = prev&&prev.people? prev.people.find(x=>x.id===p.id):null;
-    const att = pv? pv.attending : null;
-    return '<div class="guest-card" data-person="'+p.id+'"><h4>'+esc(p.name)+'</h4><div class="choice" style="margin-bottom:14px">'+
-      '<label class="'+(att===true?"sel":"")+'"><input type="radio" name="att-'+p.id+'" value="yes"'+(att===true?" checked":"")+"> "+t("rs.yes")+"</label>"+
-      '<label class="'+(att===false?"sel":"")+'"><input type="radio" name="att-'+p.id+'" value="no"'+(att===false?" checked":"")+"> "+t("rs.no")+"</label></div>"+
-      '<div class="meal-wrap" style="display:'+(att===true?"block":"none")+'">'+
-      '<div class="field" style="margin-bottom:12px"><label>'+t("rs.meal")+'</label><div class="choice">'+
-      meals.map(m=>'<label class="'+(pv&&pv.meal===m[0]?"sel":"")+'"><input type="radio" name="meal-'+p.id+'" value="'+m[0]+'"'+
-        (pv&&pv.meal===m[0]?" checked":"")+"> "+t(m[1])+"</label>").join("")+"</div></div>"+
-      '<div class="field" style="margin-bottom:0"><label>'+t("rs.diet")+'</label><input class="diet" placeholder="'+
-      t("rs.dietph")+'" value="'+esc(pv?pv.diet||"":"")+'"></div></div></div>';
-  }).join("");
-  const evChecks = h.events.map(id=>{
-    const on = prev&&prev.events? prev.events.includes(id):true;
-    return '<label class="'+(on?"sel":"")+'"><input type="checkbox" class="evc" value="'+id+'"'+(on?" checked":"")+"> "+esc(eventTitle(id))+"</label>";
-  }).join("");
-  const lg = prev&&prev.logi? prev.logi : {};
+  const prev = S.rsvps[h.code], n = h.people.length;      // the couple fixes how many people an invitation covers
+  const att = prev ? prev.people.some(p=>p.attending) : null;
   $("#rsvpForm").style.display = "block";
   $("#rsvpForm").innerHTML =
     '<div class="card" style="margin-top:26px"><p class="label">'+t("rs.hello")+
-    '</p><h3 class="h-sub" style="margin:8px 0 4px">'+esc(h.household)+'</h3>'+
-    '<p class="small" style="margin-bottom:18px">'+t("rs.invited")+" "+esc(h.code)+"</p>"+
+    '</p><h3 class="h-sub" style="margin:8px 0 4px">'+esc(h.household)+"</h3>"+
+    '<p class="small" style="margin-bottom:22px">'+(n===1 ? t("rs.for1") : t("rs.forN",{"__N__":n}))+"</p>"+
     (prev?'<div class="msg good">'+t("rs.already",{"__D__":fmtDate(prev.at.slice(0,10))})+"</div>":"")+
-    '<p class="small" style="margin-bottom:16px">'+t("rs.each")+"</p>"+people+
-    '<div class="field"><label>'+t("rs.events")+'</label><div class="choice">'+evChecks+"</div></div>"+
-    '<div class="field"><label>'+t("rs.logi")+'</label><div class="row">'+
-      '<input id="rsArrive" type="date" value="'+esc(lg.arrive||"")+'">'+
-      '<input id="rsFlight" placeholder="'+t("rs.flight")+'" value="'+esc(lg.flight||"")+'"></div>'+
-      '<div class="choice" style="margin-top:10px">'+
-      ['<label class="'+(lg.shuttle?"sel":"")+'"><input type="checkbox" id="rsShuttle"'+(lg.shuttle?" checked":"")+"> "+t("rs.shuttle")+"</label>",
-       '<label class="'+(lg.pickup?"sel":"")+'"><input type="checkbox" id="rsPickup"'+(lg.pickup?" checked":"")+"> "+t("rs.pickup")+"</label>",
-       '<label class="'+(lg.room?"sel":"")+'"><input type="checkbox" id="rsRoom"'+(lg.room?" checked":"")+"> "+t("rs.room")+"</label>"].join("")+
-      "</div></div>"+
-    '<div class="row"><div class="field"><label>'+t("rs.contact")+'</label><input id="rsContact" value="'+
-      esc(prev?prev.contact||"":(h.email||""))+'" placeholder="'+t("rs.contactph")+'"></div>'+
-    '<div class="field"><label>'+t("rs.song")+'</label><input id="rsSong" value="'+esc(prev?prev.song||"":"")+
-      '" placeholder="'+t("rs.songph")+'"></div></div>'+
-    '<div class="field"><label>'+t("rs.seatwith")+'</label><input id="rsSeat" value="'+esc(prev?prev.seatWith||"":"")+'"></div>'+
-    '<div class="field"><label>'+t("rs.note")+'</label><textarea id="rsNote">'+esc(prev?prev.note||"":"")+"</textarea></div>"+
+    '<div class="field"><label>'+t("rs.q")+'</label><div class="choice">'+
+      '<label class="'+(att===true?"sel":"")+'"><input type="radio" name="att" value="yes"'+(att===true?" checked":"")+"> "+t(n===1?"rs.yes1":"rs.yesN")+"</label>"+
+      '<label class="'+(att===false?"sel":"")+'"><input type="radio" name="att" value="no"'+(att===false?" checked":"")+"> "+t(n===1?"rs.no1":"rs.noN")+"</label></div></div>"+
+    '<div class="field" id="rsAllergyWrap" style="display:'+(att===true?"block":"none")+'"><label for="rsAllergy">'+t(n===1?"rs.allergy1":"rs.allergyN")+
+      '</label><input id="rsAllergy" autocomplete="off" value="'+esc(prev?rsvpAllergy(prev):"")+'" placeholder="'+t("rs.allergyph")+'"></div>'+
     '<div id="rsErr"></div><button class="btn" id="rsSend"><span>'+(prev?t("rs.update"):t("rs.send"))+"</span></button> "+
     '<button class="btn quiet" id="rsBack"><span>'+t("rs.back")+"</span></button></div>";
   $$("#rsvpForm .choice input").forEach(inp=> inp.onchange = ()=>{
-    const grp = inp.closest(".choice");
-    if(inp.type==="radio") $$("label",grp).forEach(l=> l.classList.toggle("sel", !!$("input:checked",l)));
-    else inp.closest("label").classList.toggle("sel", inp.checked);
-    if(inp.name && inp.name.startsWith("att-")) $(".meal-wrap", inp.closest(".guest-card")).style.display = inp.value==="yes"?"block":"none";
+    $$("#rsvpForm .choice label").forEach(l=> l.classList.toggle("sel", !!$("input:checked",l)));
+    $("#rsAllergyWrap").style.display = inp.value==="yes" ? "block" : "none";
   });
   $("#rsBack").onclick = ()=>{ $("#rsvpForm").style.display="none"; $("#rsvpCode").value=""; };
   $("#rsSend").onclick = submitRsvp;
   try{ $("#rsvpForm").scrollIntoView({behavior:"smooth",block:"start"}); }catch(e){}
 }
 async function submitRsvp(){
-  const h = foundHouse;
-  const people = $$("#rsvpForm .guest-card").map(card=>{
-    const pid = card.dataset.person;
-    const sel = $('input[name="att-'+pid+'"]:checked',card), meal = $('input[name="meal-'+pid+'"]:checked',card);
-    return {id:pid, name:h.people.find(p=>p.id===pid).name, attending: sel? sel.value==="yes":null,
-      meal: meal?meal.value:"", diet:($(".diet",card)||{}).value||""};
-  });
-  if(people.some(p=>p.attending===null)){ $("#rsErr").innerHTML='<div class="msg bad">'+t("rs.needname")+"</div>"; return; }
-  const rec = {code:h.code, houseId:h.id, household:h.household, people,
-    events:$$("#rsvpForm .evc").filter(c=>c.checked).map(c=>c.value),
-    logi:{arrive:$("#rsArrive").value, flight:$("#rsFlight").value.trim(), shuttle:$("#rsShuttle").checked,
-      pickup:$("#rsPickup").checked, room:$("#rsRoom").checked},
-    contact:$("#rsContact").value.trim(), song:$("#rsSong").value.trim(), seatWith:$("#rsSeat").value.trim(),
-    note:$("#rsNote").value.trim(), at:new Date().toISOString(), lang:LANG};
+  const h = foundHouse, sel = $('#rsvpForm input[name="att"]:checked');
+  if(!sel){ $("#rsErr").innerHTML = '<div class="msg bad">'+t("rs.choose")+"</div>"; return; }
+  const yes = sel.value === "yes";
+  // one answer covers everyone on the invitation; the shape matches older replies so seating and counts keep working
+  const rec = {code:h.code, houseId:h.id, household:h.household,
+    people:h.people.map(p=>({id:p.id, name:p.name, attending:yes})),
+    events:h.events.slice(), allergy: yes ? ($("#rsAllergy").value||"").trim() : "",
+    at:new Date().toISOString(), lang:LANG};
   S.rsvps[h.code] = rec;
   const saved = await sset("rsvp:"+h.code, rec);
   if($("#ivLog")) logInvites();
   if(!saved){ $("#rsErr").innerHTML = '<div class="msg bad">'+t("rs.fail")+"</div>"; return; }
-  $("#rsErr").innerHTML = '<div class="msg good">'+t("rs.sent")+"</div>";
+  $("#rsErr").innerHTML = '<div class="msg good">'+t(yes?"rs.sentyes":"rs.sentno")+"</div>";
   $("#rsSend").innerHTML = "<span>"+t("rs.update")+"</span>";
 }
 
@@ -2705,9 +2684,6 @@ function tally(){
     confirmed: S.gifts.filter(g=>g.status==="confirmed").reduce((s,g)=>s+Number(g.amount||0),0),
     goal: S.registry.reduce((s,i)=>s+Number(i.price||0),0) + Number(S.config.honeymoon.goal||0),
     seated: Object.keys(S.seating).length,
-    shuttle: Object.values(S.rsvps).filter(r=>r.logi&&r.logi.shuttle).length,
-    rooms: Object.values(S.rsvps).filter(r=>r.logi&&r.logi.room).length,
-    pickups: Object.values(S.rsvps).filter(r=>r.logi&&r.logi.pickup).length,
     pendingPhotos: S.photos.filter(p=>p.tag==="gallery"&&p.ok===false).length,
     pendingNotes: S.book.filter(b=>b.ok===false).length};
 }
@@ -2742,9 +2718,6 @@ function cDash(){
     "</div>"+
     (todo.length?'<div class="cform"><h3 style="margin-bottom:10px">'+A("À faire","To do")+"</h3>"+
       todo.map(x=>'<button class="tbtn" data-go="'+x[1]+'" style="margin:0 8px 8px 0">'+esc(x[0])+"</button>").join("")+"</div>":"")+
-    '<div class="cform"><h3 style="margin-bottom:8px">'+A("Logistique demandée","Logistics requested")+"</h3>"+
-      '<div class="stats" style="margin:0">'+stat(n.shuttle,A("navettes","shuttles"))+stat(n.pickups,A("accueils aéroport","airport pick-ups"))+
-      stat(n.rooms,A("chambres dans le bloc","rooms in the block"))+"</div></div>"+
     '<div class="cform"><h3 style="margin-bottom:8px">'+A("Cadeaux : progression","Gifts: progress")+"</h3>"+
       '<div style="height:8px;background:#E7EBEF;overflow:hidden;margin:10px 0 8px"><div style="height:100%;width:'+
       Math.min(100, n.goal? n.funded/n.goal*100:0)+'%;background:var(--french)"></div></div>'+
@@ -2862,12 +2835,12 @@ function cGuests(){
     const keep = $("#ngPasteMsg").innerHTML;
     cGuests(); $("#ngPasteMsg").innerHTML = keep;
   };
-  $("#gExport").onclick = ()=> csv("invites", [["code","foyer","personne","cote","groupe","places","attendus","confirme_de_vive_voix","email","whatsapp","reponse","presence","repas","regime"]]
+  $("#gExport").onclick = ()=> csv("invites", [["code","foyer","personne","cote","groupe","places","attendus","confirme_de_vive_voix","email","whatsapp","reponse","presence","allergie"]]
     .concat(S.guests.flatMap(h=> h.people.map(p=>{
       const r = S.rsvps[h.code], pv = r? r.people.find(x=>x.id===p.id):null;
       return [h.code,h.household,p.name,h.side,h.group||"",h.people.length,(h.expected ?? h.people.length),
               h.preconfirmed?"oui":"non",h.email||"",h.phone||"",r?"oui":"non",
-              pv?(pv.attending?"present":"absent"):"", pv?pv.meal||"":"", pv?pv.diet||"":""];}))));
+              pv?(pv.attending?"present":"absent"):"", (r && pv && pv.attending) ? rsvpAllergy(r) : ""];}))));
   $("#gChase").onclick = ()=>{
     const silent = S.guests.filter(h=> !S.rsvps[h.code]);
     if(!silent.length){ alert(A("Tout le monde a répondu.","Everyone has replied.")); return; }
@@ -3244,38 +3217,28 @@ async function drawInvite(){
 /* ---------- replies ---------- */
 function cReplies(){
   const rs = Object.values(S.rsvps).sort((a,b)=>b.at.localeCompare(a.at));
-  const songs = rs.map(r=>r.song).filter(Boolean);
-  const diet = rs.flatMap(r=> r.people.filter(p=>p.diet).map(p=>p.name+" : "+p.diet));
-  const meals = {};
-  rs.forEach(r=> r.people.filter(p=>p.attending).forEach(p=> meals[p.meal||"—"] = (meals[p.meal||"—"]||0)+1));
+  const nYes = r => r.people.filter(p=>p.attending).length;
+  const coming = rs.filter(r=>nYes(r)>0), declined = rs.filter(r=>nYes(r)===0);
+  const heads = coming.reduce((s,r)=>s+nYes(r),0);
+  const waiting = S.guests.filter(h=>!S.rsvps[h.code]).length;
+  const allergic = coming.filter(r=>rsvpAllergy(r).trim());
   $("#cp-replies").innerHTML =
     '<div class="cform"><button class="tbtn" id="rxCsv">'+A("Exporter les réponses","Export replies")+
-      '</button> <button class="tbtn" id="rxSongs">'+A("Exporter la playlist","Export playlist")+
-      '</button> <button class="tbtn" id="rxLogi">'+A("Exporter la logistique","Export logistics")+
-      '</button> <span class="mini" style="margin-left:10px">'+rs.length+" "+A("réponses","replies")+"</span></div>"+
-    '<div class="stats">'+Object.entries(meals).map(([k,v])=>stat(v,k)).join("")+"</div>"+
-    (rs.length?'<table class="t"><thead><tr><th>'+A("Foyer","Household")+"</th><th>"+A("Personnes","People")+
-      "</th><th>"+A("Repas","Meals")+"</th><th>"+A("Voyage","Travel")+"</th><th>"+A("Voisins souhaités","Wants to sit with")+
-      "</th><th>Contact</th></tr></thead><tbody>"+rs.map(r=>{
-      const lg = r.logi||{};
-      const tags = [lg.shuttle?A("navette","shuttle"):"", lg.pickup?A("aéroport","airport"):"", lg.room?A("chambre","room"):""]
-        .filter(Boolean).map(x=>'<span class="tag">'+x+"</span>").join(" ");
+      '</button> <span class="mini" style="margin-left:10px">'+rs.length+" "+(rs.length===1?A("réponse","reply"):A("réponses","replies"))+"</span></div>"+
+    '<div class="stats">'+stat(coming.length,A("foyers présents","households coming"))+stat(heads,A("personnes présentes","people coming"))+
+      stat(declined.length,A("foyers absents","households declined"))+stat(waiting,A("sans réponse","no reply yet"))+
+      stat(allergic.length,A("allergies signalées","allergies reported"))+"</div>"+
+    (rs.length?'<table class="t"><thead><tr><th>'+A("Foyer","Household")+"</th><th>"+A("Réponse","Reply")+"</th><th>"+
+      A("Allergie","Allergy")+"</th><th>"+A("Reçue le","Received")+"</th></tr></thead><tbody>"+rs.map(r=>{
+      const y = nYes(r);
       return "<tr><td><b>"+esc(r.household)+'</b><div class="mini">'+esc(r.code)+"</div></td><td>"+
-        r.people.map(p=>'<span class="tag '+(p.attending?"yes":"no")+'">'+esc(p.name)+"</span>").join(" ")+
-        '</td><td class="mini">'+r.people.filter(p=>p.attending).map(p=>p.meal||"—").join(", ")+
-        "</td><td>"+tags+'<div class="mini">'+esc(lg.arrive||"")+" "+esc(lg.flight||"")+"</div></td>"+
-        '<td class="mini">'+esc(r.seatWith||"")+'</td><td class="mini">'+esc(r.contact||"")+"</td></tr>";
+        (y ? '<span class="tag yes">'+A("Oui","Yes")+" · "+y+"/"+r.people.length+"</span>" : '<span class="tag no">'+A("Non","No")+"</span>")+
+        '</td><td class="mini">'+esc(y ? rsvpAllergy(r) : "")+'</td><td class="mini">'+esc(r.at.slice(0,10))+"</td></tr>";
     }).join("")+"</tbody></table>":'<p class="mini">'+A("Rien encore.","Nothing yet.")+"</p>")+
-    (diet.length?'<div class="cform" style="margin-top:20px"><h3 style="margin-bottom:8px">'+A("Régimes & accès","Diet & access")+
-      '</h3><p class="mini">'+diet.map(esc).join(" · ")+"</p></div>":"")+
-    (songs.length?'<div class="cform"><h3 style="margin-bottom:8px">'+A("Demandes de la piste","Dance floor requests")+
-      '</h3><p class="mini">'+songs.map(esc).join(" · ")+"</p></div>":"");
-  $("#rxCsv").onclick = ()=> csv("reponses",[["code","foyer","personne","presence","repas","regime","contact","chanson","mot","date"]]
-    .concat(rs.flatMap(r=> r.people.map(p=>[r.code,r.household,p.name,p.attending?"present":"absent",p.meal||"",p.diet||"",
-      r.contact||"",r.song||"",r.note||"",r.at]))));
-  $("#rxSongs").onclick = ()=> csv("playlist",[["chanson","de"]].concat(rs.filter(r=>r.song).map(r=>[r.song,r.household])));
-  $("#rxLogi").onclick = ()=> csv("logistique",[["foyer","arrivee","vol","navette","aeroport","chambre","contact"]]
-    .concat(rs.map(r=>{const l=r.logi||{};return [r.household,l.arrive||"",l.flight||"",l.shuttle?"oui":"",l.pickup?"oui":"",l.room?"oui":"",r.contact||""];})));
+    (allergic.length?'<div class="cform" style="margin-top:20px"><h3 style="margin-bottom:8px">'+A("Allergies à communiquer au traiteur","Allergies to pass to the caterer")+
+      '</h3><p class="mini">'+allergic.map(r=>esc(r.household)+" : "+esc(rsvpAllergy(r))).join(" · ")+"</p></div>":"");
+  $("#rxCsv").onclick = ()=> csv("reponses",[["code","foyer","reponse","personnes_presentes","personnes_invitees","allergie","date"]]
+    .concat(rs.map(r=>[r.code,r.household,nYes(r)?"oui":"non",nYes(r),r.people.length,nYes(r)?rsvpAllergy(r):"",r.at])));
 }
 
 /* ---------- seating (visual plan) ---------- */
@@ -3283,7 +3246,7 @@ let picked = null;
 function attendees(){
   const out = [];
   Object.values(S.rsvps).forEach(r=> r.people.forEach(p=>{
-    if(p.attending) out.push({key:r.code+":"+p.id, name:p.name, house:r.household, meal:p.meal, wants:r.seatWith||""});
+    if(p.attending) out.push({key:r.code+":"+p.id, name:p.name, house:r.household, allergy:rsvpAllergy(r), wants:""});
   }));
   return out;
 }
@@ -3336,8 +3299,8 @@ function cSeating(){
     await sset("w:seating", S.seating); cSeating();
   };
   $("#tbPrint").onclick = ()=> window.print();
-  $("#tbCards").onclick = ()=> csv("marque-places",[["nom","table","repas"]].concat(
-    all.filter(p=>S.seating[p.key]).map(p=>[p.name, L((S.tables.find(t=>t.id===S.seating[p.key])||{}).name||""), p.meal||""])));
+  $("#tbCards").onclick = ()=> csv("marque-places",[["nom","table","allergie"]].concat(
+    all.filter(p=>S.seating[p.key]).map(p=>[p.name, L((S.tables.find(t=>t.id===S.seating[p.key])||{}).name||""), p.allergy||""])));
 }
 function renderTableList(){
   const host = $("#tableList"); if(!host) return;
