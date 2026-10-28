@@ -508,7 +508,7 @@ table.t tr:hover td{background:#F4F7FA}
 <body>
 <header class="masthead" id="masthead">
   <div class="mast-in">
-    <a class="monogram" href="#home"><span class="mk" id="mastCrest"></span><span class="nm">MATHITHIA &amp; NANA-MICHELLE</span></a>
+    <a class="monogram" href="#home"><span class="mk" id="mastCrest"></span><span class="nm">MATHITHIA &amp; NANAMICHELE</span></a>
     <button class="burger" id="burger" aria-expanded="false" data-t="menu">Menu</button>
     <nav class="nav" id="nav">
       <a href="#home" data-t="nav.home">Accueil</a>
@@ -1377,7 +1377,7 @@ config:{
   dateISO:"2027-03-06", rsvpBy:"2027-01-15",
   city:{fr:"Durban, Afrique du Sud",en:"Durban, South Africa"},
   hashtag:"#MathiEtNana", contact:"mathi.nana.2027@gmail.com", pin:"1205",
-  site:"https://matthi-nana.co.za", livestream:"",
+  site:"https://mathi-nana.com", livestream:"",
   kicker:{fr:"NOUS NOUS MARIONS",en:"WE ARE GETTING MARRIED"},
   storyH:{fr:"Mille sept cents kilomètres",en:"Seventeen hundred kilometres"},
   bank:{holder:"S Simani", bank:"Capitec Bank", acct:"1339383754", branch:"470010",
@@ -2237,7 +2237,7 @@ function buildIcs(){
   const lines = ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Mathi & Nana//"];
   S.events.forEach(e=>{
     const [Y,M,D]=e.date.split("-"), [h,m]=e.time.split(":");
-    lines.push("BEGIN:VEVENT","UID:"+e.id+"@matthinana","DTSTART;TZID=Africa/Johannesburg:"+Y+M+D+"T"+pad(h)+pad(m)+"00",
+    lines.push("BEGIN:VEVENT","UID:"+e.id+"@mathinana","DTSTART;TZID=Africa/Johannesburg:"+Y+M+D+"T"+pad(h)+pad(m)+"00",
       "DTEND;TZID=Africa/Johannesburg:"+Y+M+D+"T"+pad((Number(h)+2)%24)+pad(m)+"00",
       "SUMMARY:"+L(e.title)+" — Mathithia & Nanamichele","LOCATION:"+L(e.place),
       "DESCRIPTION:"+String(L(e.desc)).replace(/\n/g," "),"END:VEVENT");
@@ -2245,7 +2245,7 @@ function buildIcs(){
   lines.push("END:VCALENDAR");
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob([lines.join("\r\n")],{type:"text/calendar"}));
-  a.download = "matthi-nana.ics"; a.click();
+  a.download = "mathi-nana.ics"; a.click();
 }
 
 /* ---------- reveal on scroll ---------- */
@@ -3563,7 +3563,7 @@ async function exportAll(){
   const data = collectState();
   for(const p of ["rsvp:","gift:","book:","photo:"])
     for(const k of await slist(p)){ if(!(k in data)){ const v = await sget(k, undefined); if(v!==undefined) data[k]=v; } }
-  const payload = {_format:"matthi-nana-wedding", _version:3, _at:new Date().toISOString(), data};
+  const payload = {_format:"mathi-nana-wedding", _version:3, _at:new Date().toISOString(), data};
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob([JSON.stringify(payload)], {type:"application/json"}));
   a.download = "sauvegarde-mariage-"+new Date().toISOString().slice(0,10)+".json";
@@ -3642,6 +3642,25 @@ function cSync(){
       '</span></button> <button class="tbtn danger" id="syOff" style="margin-left:6px">'+A("Débrancher","Disconnect")+"</button></div>"+
       '<div id="syMsg" style="margin-top:12px"></div></div>'+
 
+    '<div class="cform" style="border-left:3px solid var(--gold)"><h3 style="margin-bottom:6px">'+
+      A("Remettre à la version du site","Reset to the version in the site file")+"</h3>"+
+      '<p class="mini" style="margin-bottom:12px">'+A(
+        "La base de données a priorité sur le fichier du site. Si vous avez déposé une nouvelle version du site et que rien ne change, c'est que l'ancienne version est encore enregistrée ici. Cochez ce qu'il faut remplacer par la version livrée avec le fichier, puis confirmez.",
+        "The database overrides the site file. If you have deployed a new version and nothing changes, the old data is still stored here. Tick what should be replaced by the version shipped with the file, then confirm.")+"</p>"+
+      [["guests",A("Liste d'invités","Guest list")],["registry",A("Liste de cadeaux","Gift list")],
+       ["party",A("Demoiselles & garçons","Bridesmaids & groomsmen")],["events",A("Programme","Schedule")],
+       ["travel",A("Voyage","Travel")],["faq",A("Questions fréquentes","Questions")],
+       ["dress",A("Code vestimentaire","Dress code")],["config",A("Textes, lieu, coordonnées bancaires","Words, venue, bank details")],
+       ["theme",A("Apparence","Appearance")],["photos",A("Photos","Photos")],
+       ["tables",A("Tables","Tables")],["fixtures",A("Plan de salle","Floor plan")]]
+      .map(x=>'<label class="toggle"><input type="checkbox" data-rst="'+x[0]+'"> '+x[1]+"</label>").join("")+
+      '<div style="margin-top:12px"><button class="tbtn" id="syRstAll">'+A("Tout cocher","Tick everything")+
+      '</button> <button class="btn sm warn" id="syReset" style="margin-left:6px"><span>'+
+      A("Remplacer par la version du fichier","Replace with the file's version")+"</span></button></div>"+
+      '<p class="mini" style="margin-top:10px">'+A(
+        "Vos réponses, cadeaux reçus, mots du livre d'or et plan de table ne sont jamais touchés. La connexion Supabase est conservée.",
+        "Your replies, received gifts, guest-book notes and seating are never touched. The Supabase connection is kept.")+"</p>"+
+      '<div id="syRstMsg" style="margin-top:10px"></div></div>'+
     '<div class="cform"><h3 style="margin-bottom:6px">'+A("Sauvegarde complète","Full backup")+"</h3>"+
       '<p class="mini" style="margin-bottom:10px">'+A(
         "Un seul fichier contenant tout : liste d'invités, réponses, cadeaux, plan de salle, photos, textes et apparence. Faites-le chaque semaine, et avant tout changement important.",
@@ -3701,6 +3720,31 @@ function cSync(){
     S.config.sync = {url:"",anon:""}; await save("config");
     if(LS) try{ LS.removeItem(LSK); }catch(e){}
     CLOUD.on = false; CLOUD.hydrated = false; CLOUD.url = ""; CLOUD.anon = ""; CLOUD.admin = "";
+    cSync();
+  };
+  $("#syRstAll").onclick = ()=> $$("[data-rst]").forEach(c=> c.checked = true);
+  $("#syReset").onclick = async ()=>{
+    const keys = $$("[data-rst]").filter(c=>c.checked).map(c=>c.dataset.rst);
+    if(!keys.length){ $("#syRstMsg").innerHTML = '<div class="msg bad">'+
+      A("Cochez au moins un élément.","Tick at least one item.")+"</div>"; return; }
+    if(!confirm(A("Remplacer ces données par la version livrée avec le fichier du site ? Ce qui est enregistré sera écrasé.",
+                  "Replace this data with the version shipped in the site file? What is stored will be overwritten."))) return;
+    $("#syRstMsg").innerHTML = '<div class="msg">…</div>';
+    let done = 0, bad = 0;
+    for(const k of keys){
+      const fresh = JSON.parse(JSON.stringify(DEFAULTS[k]));
+      if(k === "config"){           // keep the database connection and the media location
+        fresh.sync = S.config.sync || fresh.sync;
+        if(S.config.mediaBase) fresh.mediaBase = S.config.mediaBase;
+      }
+      S[k] = fresh;
+      (await sset("w:"+k, fresh)) ? done++ : bad++;
+    }
+    if(keys.includes("photos")){ PIX.seed1 = PIX.seed1; }
+    await loadAll(); await renderAll();
+    $("#syRstMsg").innerHTML = '<div class="msg '+(bad?"bad":"good")+'">'+
+      done+" "+A("ensembles remis à la version du fichier","sets reset to the file's version")+
+      (bad? " · "+bad+" "+A("échecs","failed"):"")+"</div>";
     cSync();
   };
   $("#syExport").onclick = async ()=>{
