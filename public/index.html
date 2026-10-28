@@ -1114,7 +1114,7 @@ const MEDIA = {"h1": "h1.jpg", "h2": "h2.jpg", "h3": "h3.jpg", "h4": "h4.jpg", "
 const SHOOT_LIST = [{"id": "s_857A2147", "fr": "Devant le cœur de roses", "en": "Before the heart of roses"}, {"id": "s_857A2148", "fr": "Devant le cœur de roses", "en": "Before the heart of roses"}, {"id": "s_857A2152", "fr": "Les fleurs", "en": "The flowers"}, {"id": "s_857A2158", "fr": "Assise, les roses dans les bras", "en": "Seated, roses in her arms"}, {"id": "s_857A2166", "fr": "Le rire qui a tout dit", "en": "The laugh that said everything"}, {"id": "s_857A2174", "fr": "Un instant à eux", "en": "A moment of their own"}, {"id": "s_857A2183", "fr": "Le baiser", "en": "The kiss"}, {"id": "s_857A2184", "fr": "Le baiser", "en": "The kiss"}, {"id": "s_857A2235", "fr": "Le champagne", "en": "Champagne"}, {"id": "s_857A2239", "fr": "Front contre front", "en": "Forehead to forehead"}, {"id": "s_857A2242", "fr": "Elle, lui, et rien d'autre", "en": "Her, him, and nothing else"}, {"id": "s_857A2246", "fr": "Les yeux dans les yeux", "en": "Eye to eye"}, {"id": "s_DSC02026", "fr": "L'escalier, avant tout", "en": "The staircase, before everything"}, {"id": "s_DSC02044", "fr": "Les yeux bandés", "en": "Blindfolded"}, {"id": "s_DSC02053", "fr": "Le oui", "en": "The yes"}, {"id": "s_DSC02083", "fr": "Un genou à terre", "en": "Down on one knee"}, {"id": "s_DSC02104", "fr": "L'étreinte", "en": "The embrace"}, {"id": "s_DSC02107", "fr": "« Will you marry me »", "en": "« Will you marry me »"}, {"id": "s_DSC02113", "fr": "La demande", "en": "The proposal"}, {"id": "s_DSC02114", "fr": "La bague", "en": "The ring"}, {"id": "s_DSC02117", "fr": "Fiancés", "en": "Engaged"}, {"id": "s_DSC02128", "fr": "Main dans la main", "en": "Hand in hand"}, {"id": "s_DSC02141", "fr": "Portée", "en": "Carried"}];
 
 /* ---------- cloud sync (Supabase REST, no SDK, no build step) ---------- */
-const BUILD = "28 oct. 2026, r12";
+const BUILD = "28 oct. 2026, r13";
 const CLOUD = {url:"", anon:"", admin:"", on:false, hydrated:false, lastError:"", lastSync:null,
                dirty:new Set(), errLog:[], boot:null, bootTried:false, lastCheck:null};
 const LSK = "mn-admin-key";
@@ -2845,19 +2845,20 @@ function cGuests(){
     const silent = S.guests.filter(h=> !S.rsvps[h.code]);
     if(!silent.length){ alert(A("Tout le monde a répondu.","Everyone has replied.")); return; }
     modal("<h3>"+A("Relancer","Chase")+'</h3><p class="small" style="margin-bottom:14px">'+
-      A("Un message prêt par foyer. Cliquez pour ouvrir WhatsApp.","One ready message per household. Click to open WhatsApp.")+"</p>"+
+      A("Un message prêt par foyer. Cliquez pour ouvrir WhatsApp ou votre e-mail.","One ready message per household. Click to open WhatsApp or your e-mail.")+"</p>"+
       silent.map(h=>{
         const msg = A("Bonjour "+h.household+", petit rappel affectueux : merci de répondre à notre invitation avant le "+
-          fmtDate(S.config.rsvpBy,{day:"numeric",month:"long"})+". Votre code : "+h.code+" — "+S.config.site,
+          fmtDate(S.config.rsvpBy,{day:"numeric",month:"long"})+". Votre lien : "+rsvpLink(h)+" (code "+h.code+")",
           "Hello "+h.household+", a gentle reminder to reply to our invitation before "+
-          fmtDate(S.config.rsvpBy,{day:"numeric",month:"long"})+". Your code: "+h.code+" — "+S.config.site);
-        return '<p style="margin-bottom:8px"><a class="btn sm ghost" target="_blank" rel="noopener" href="https://wa.me/'+
-          (h.phone||"").replace(/[^0-9]/g,"")+"?text="+encodeURIComponent(msg)+'">'+esc(h.household)+"</a></p>";
+          fmtDate(S.config.rsvpBy,{day:"numeric",month:"long"})+". Your link: "+rsvpLink(h)+" (code "+h.code+")");
+        return '<p style="margin-bottom:8px"><b>'+esc(h.household)+'</b> <a class="btn sm ghost" target="_blank" rel="noopener" href="'+esc(waLink(h, msg))+'">WhatsApp</a>'+
+          (validEmail(h.email) ? ' <a class="btn sm ghost" target="_blank" rel="noopener" href="'+
+            esc(mailLink(mailApp(), h.email.trim(), A("Rappel : notre invitation","Reminder: our invitation"), msg))+'">E-mail</a>' : "")+"</p>";
       }).join(""), true);
   };
   $$("[data-gw]").forEach(b=> b.onclick = ()=>{
     const h = S.guests.find(x=>x.id===b.dataset.gw);
-    window.open("https://wa.me/"+(h.phone||"").replace(/[^0-9]/g,"")+"?text="+encodeURIComponent(inviteText(h, LANG)),"_blank");
+    window.open(waLink(h, inviteText(h, LANG)),"_blank");
   });
   $$("[data-gd]").forEach(b=> b.onclick = async ()=>{
     if(!confirm(A("Supprimer ?","Delete?"))) return;
@@ -2899,20 +2900,22 @@ function rsvpLink(h){
   const base = String(S.config.site||"").replace(/\/+$/,"");
   return base + "/#rsvp?c=" + h.code;
 }
-function inviteText(h, lg, cardUrl){
+function inviteText(h, lg, cardUrl, forMail){
   const fr = lg==="fr";
   const d = new Date(S.config.dateISO+"T12:00:00").toLocaleDateString(fr?"fr-FR":"en-ZA",
     {weekday:"long",day:"numeric",month:"long",year:"numeric"});
   const by = new Date(S.config.rsvpBy+"T12:00:00").toLocaleDateString(fr?"fr-FR":"en-ZA",{day:"numeric",month:"long"});
   const city = fr ? S.config.city.fr : (S.config.city.en||S.config.city.fr);
   const card = cardUrl ? (cardUrl+"\n\n") : "";
+  const tail = forMail ? (fr ? "\n\nAvec toute notre affection,\nMathithia & Nanamichele" : "\n\nWith love,\nMathithia & Nanamichele")
+                       : "\n\n"+S.config.hashtag;
   return fr
     ? card+"Cher·e "+h.household+",\n\nMathithia Maloba et Nanamichele Mundele ont la joie de vous convier à leur mariage, le "
-      +d+" à "+city+".\n\nVotre invitation est en ligne — programme, lieu, liste de cadeaux et réponse :\n"+rsvpLink(h)
-      +"\n\nVotre code : "+h.code+"\nMerci de répondre avant le "+by+".\n\n"+S.config.hashtag
+      +d+" à "+city+".\n\nVotre invitation est en ligne (programme, lieu, liste de cadeaux et réponse) :\n"+rsvpLink(h)
+      +"\n\nVotre code : "+h.code+"\nMerci de répondre avant le "+by+"."+tail
     : card+"Dear "+h.household+",\n\nMathithia Maloba and Nanamichele Mundele warmly invite you to their wedding on "
-      +d+" in "+city+".\n\nYour invitation is online — schedule, venue, gift list and RSVP:\n"+rsvpLink(h)
-      +"\n\nYour code: "+h.code+"\nKindly reply by "+by+".\n\n"+S.config.hashtag;
+      +d+" in "+city+".\n\nYour invitation is online (schedule, venue, gift list and RSVP):\n"+rsvpLink(h)
+      +"\n\nYour code: "+h.code+"\nKindly reply by "+by+"."+tail;
 }
 
 function cInvites(){
@@ -2920,8 +2923,8 @@ function cInvites(){
   const cur = S.config.invitePhotoId || "story";
   $("#cp-invites").innerHTML =
     '<div class="help">'+A(
-      "WhatsApp ne peut pas joindre une image à un lien. Sur téléphone, « Envoyer » ouvre le partage et la carte part en pièce jointe. Sur ordinateur, la carte se télécharge et WhatsApp Web s'ouvre : glissez l'image dans la conversation. Dans les deux cas l'invitation est marquée comme envoyée.",
-      "WhatsApp cannot attach an image to a link. On a phone, Send opens the share sheet and the card goes as an attachment. On a computer the card downloads and WhatsApp Web opens: drag the image into the chat. Either way the invitation is marked as sent.")+"</div>"+
+      "Sur ordinateur, « Envoyer » ouvre WhatsApp (Web ou application) et votre messagerie avec le message prêt, et copie la carte : collez-la avec Ctrl+V (Cmd+V sur Mac) dans chaque fenêtre, puis appuyez sur Envoyer. Sur téléphone, « Envoyer » ouvre le partage et la carte part en pièce jointe. Le site n'envoie rien à votre place : c'est vous qui appuyez sur Envoyer dans WhatsApp et dans l'e-mail.",
+      "On a computer, Send opens WhatsApp (Web or the app) and your e-mail with the message ready, and copies the card: paste it with Ctrl+V (Cmd+V on a Mac) into each window, then press Send. On a phone, Send opens the share sheet and the card goes as an attachment. The site sends nothing for you: you press Send in WhatsApp and in the e-mail.")+"</div>"+
     '<div class="cform"><h3 style="margin-bottom:10px">'+A("Fabrique d'invitations","Invitation workshop")+"</h3>"+
     '<div class="row3"><div><label>'+A("Invitation","Invitation")+'</label><select id="ivWho">'+
       S.guests.map(h=>'<option value="'+h.id+'">'+esc(h.household)+" — "+esc(h.code)+"</option>").join("")+"</select></div>"+
@@ -2936,8 +2939,18 @@ function cInvites(){
         '<option value="key">'+A("Les trois principaux","The main three")+'</option>'+
         '<option value="all">'+A("Tous ceux de l\'invitation","All on their invitation")+'</option>'+
         '<option value="none">'+A("Aucun","None")+"</option></select></div></div>"+
+    '<div class="row3" style="margin-top:14px"><div><label>WhatsApp</label><input id="ivPhone" autocomplete="off" placeholder="+27 82 123 4567"></div>'+
+      '<div><label>'+A("E-mail","E-mail")+'</label><input id="ivEmail" autocomplete="off" placeholder="nom@exemple.com"></div>'+
+      '<div><label>'+A("Ouvrir l'e-mail avec","Open the e-mail with")+'</label><select id="ivMailApp">'+
+        '<option value="gmail">Gmail</option><option value="outlook">Outlook.com</option>'+
+        '<option value="mailto">'+A("Application de messagerie","Mail app")+"</option></select></div></div>"+
+    '<p class="mini" id="ivChan" style="margin:10px 0 0"></p>'+
     '<div style="margin-top:14px">'+
-      '<button class="btn sm" id="ivSend"><span>'+A("Envoyer par WhatsApp","Send on WhatsApp")+'</span></button> '+
+      '<button class="btn sm" id="ivSend"><span></span></button> '+
+      '<button class="tbtn" id="ivSendWa">'+A("WhatsApp seulement","WhatsApp only")+'</button> '+
+      '<button class="tbtn" id="ivSendMail">'+A("E-mail seulement","E-mail only")+'</button> '+
+      '<button class="tbtn" id="ivNext">'+A("Foyer suivant à envoyer","Next to send")+'</button></div>'+
+    '<div style="margin-top:10px">'+
       '<button class="tbtn" id="ivDl">'+A("Télécharger la carte","Download the card")+'</button> '+
       '<button class="tbtn" id="ivCopy">'+A("Copier le message","Copy the message")+'</button> '+
       '<button class="tbtn" id="ivSent">'+A("Marquer comme envoyée","Mark as sent")+'</button> '+
@@ -2949,7 +2962,12 @@ function cInvites(){
       '<div style="flex:1;min-width:300px"><div class="cform"><h3 style="margin-bottom:8px">'+A("Suivi","Tracking")+
       '</h3><table class="t"><thead><tr><th>'+A("Foyer","Household")+"</th><th>Code</th><th>"+A("Invitation","Invitation")+
       "</th><th>"+A("Réponse","Reply")+"</th><th></th></tr></thead><tbody id=\"ivLog\"></tbody></table></div></div></div>";
-  ["ivWho","ivLang","ivEvents","ivStyle"].forEach(id=> $("#"+id).onchange = drawInvite);
+  ["ivLang","ivEvents","ivStyle"].forEach(id=> $("#"+id).onchange = drawInvite);
+  $("#ivWho").onchange = ()=>{ syncContactFields(); drawInvite(); };
+  $("#ivMailApp").value = (LS && LS.getItem("mn-mailapp")) || "gmail";
+  $("#ivMailApp").onchange = ()=>{ if(LS) try{ LS.setItem("mn-mailapp", $("#ivMailApp").value); }catch(e){} };
+  $("#ivPhone").onchange = async ()=>{ const h = curHouse(); h.phone = $("#ivPhone").value.trim(); await save("guests"); refreshChannels(); logInvites(); };
+  $("#ivEmail").onchange = async ()=>{ const h = curHouse(); h.email = $("#ivEmail").value.trim(); await save("guests"); refreshChannels(); logInvites(); };
   $("#ivPhoto").onchange = async ()=>{ S.config.invitePhotoId = $("#ivPhoto").value; await save("config"); drawInvite(); };
   $("#ivDl").onclick = async ()=>{ await drawInvite();
     const h = curHouse(), a = document.createElement("a");
@@ -2969,8 +2987,15 @@ function cInvites(){
       $("#ivMsg").innerHTML = '<div class="msg good">'+A("Message copié.","Message copied.")+"</div>"; }catch(e){}
   };
   $("#ivSent").onclick = async ()=> markSent(curHouse(), true);
-  $("#ivSend").onclick = sendInvite;
-  logInvites(); drawInvite();
+  $("#ivSend").onclick = ()=> sendInvite("both");
+  $("#ivSendWa").onclick = ()=> sendInvite("wa");
+  $("#ivSendMail").onclick = ()=> sendInvite("mail");
+  $("#ivNext").onclick = ()=>{
+    const n = nextUnsent();
+    if(!n){ invMsg(A("Toutes les invitations sont envoyées.","Every invitation has been sent."), "good"); return; }
+    $("#ivWho").value = n.id; syncContactFields(); drawInvite(); invMsg("");
+  };
+  logInvites(); syncContactFields(); drawInvite();
 }
 function curHouse(){ return S.guests.find(h=>h.id===$("#ivWho").value) || S.guests[0]; }
 
@@ -2979,57 +3004,182 @@ async function markSent(h, redraw){
   await save("guests"); logInvites();
   if(redraw) $("#ivMsg").innerHTML = '<div class="msg good">'+esc(h.household)+" — "+A("marquée comme envoyée.","marked as sent.")+"</div>";
 }
-function waNumber(h){ return (h.phone||"").replace(/[^0-9]/g,""); }
+/* ---------- sending an invitation ---------- */
+const isMobileDevice = ()=> /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+  (navigator.maxTouchPoints > 1 && /Macintosh/.test(navigator.userAgent));
+// WhatsApp wants digits only, in international form, with no leading zero:
+// "082 123 4567" becomes 27821234567 and "+243 81 234 5678" becomes 243812345678.
+function waDigits(h){
+  const raw = String((h && h.phone) || "").trim();
+  if(!raw) return "";
+  const plus = raw.charAt(0) === "+", d = raw.replace(/\D/g, "");
+  if(!d) return "";
+  if(plus) return d;
+  if(d.indexOf("00") === 0) return d.slice(2);
+  const cc = String((S.config && S.config.countryCode) || "27");
+  if(d.charAt(0) === "0") return cc + d.slice(1);
+  if(d.length === 9) return cc + d;               // a South African mobile typed without its leading zero
+  return d;
+}
+const waNumber = waDigits;
+const waLink = (h, text) => "https://wa.me/" + waDigits(h) + "?text=" + encodeURIComponent(text);
+const validEmail = e => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(e||"").trim());
+function inviteSubject(lg){
+  const fr = lg === "fr";
+  const d = new Date(S.config.dateISO+"T12:00:00").toLocaleDateString(fr?"fr-FR":"en-ZA",{day:"numeric",month:"long",year:"numeric"});
+  return fr ? "Invitation au mariage de Mathithia et Nanamichele, le "+d : "You are invited to Mathithia and Nanamichele's wedding, "+d;
+}
+function mailLink(app, to, subject, body){
+  const q = (k, v) => k + "=" + encodeURIComponent(v);
+  if(app === "gmail")   return "https://mail.google.com/mail/?view=cm&fs=1&" + q("to", to) + "&" + q("su", subject) + "&" + q("body", body);
+  if(app === "outlook") return "https://outlook.live.com/mail/0/deeplink/compose?" + q("to", to) + "&" + q("subject", subject) + "&" + q("body", body);
+  return "mailto:" + encodeURIComponent(to).replace(/%40/g, "@") + "?" + q("subject", subject) + "&" + q("body", String(body).replace(/\n/g, "\r\n"));
+}
+function goMail(url){ window.location.href = url; }          // a function of its own so it can be replaced in tests
+function mailApp(){ return (($("#ivMailApp") && $("#ivMailApp").value) || (LS && LS.getItem("mn-mailapp")) || "gmail"); }
+function cardBlob(){ return drawInvite().then(()=> new Promise(res=> $("#ivCanvas").toBlob(res, "image/png"))); }
 
-async function sendInvite(){
-  const h = curHouse(), lg = $("#ivLang").value, msg = $("#ivMsg");
-  msg.innerHTML = '<div class="msg">'+A("Préparation de la carte…","Preparing the card…")+"</div>";
-  await drawInvite();
-  const canvas = $("#ivCanvas");
-  const blob = await new Promise(res=> canvas.toBlob(res, "image/png"));
-  const file = blob ? new File([blob], "invitation-"+h.code+".png", {type:"image/png"}) : null;
+async function markSentVia(h, chans){
+  const now = new Date().toISOString();
+  h.sentVia = Object.assign({}, h.sentVia || {});
+  chans.forEach(c=>{ h.sentVia[c] = now; });
+  h.sent = true; h.sentAt = now;
+  await save("guests"); logInvites();
+}
+async function unsendInvite(h){
+  h.sent = false; delete h.sentAt; h.sentVia = {};
+  await save("guests"); logInvites();
+}
+function invMsg(html, cls){ const m = $("#ivMsg"); if(m) m.innerHTML = html ? '<div class="msg'+(cls?" "+cls:"")+'">'+html+"</div>" : ""; }
 
-  let cardUrl = "";
-  try{ if(blob) cardUrl = await cloudUploadCard(h.code, blob); }
-  catch(e){ console.warn("card upload", e && e.message); }
-  const text = inviteText(h, lg, cardUrl);
-
-  // phone: the card travels as a real attachment, one press
-  if(file && navigator.canShare && navigator.canShare({files:[file]})){
-    try{
-      await navigator.share({files:[file], text});
-      await markSent(h);
-      msg.innerHTML = '<div class="msg good">'+A("Carte envoyée et invitation marquée comme envoyée.",
-        "Card sent and invitation marked as sent.")+"</div>";
-      return;
-    }catch(e){ if(e && e.name==="AbortError"){ msg.innerHTML=""; return; } }
+// Runs straight from the click. Nothing is awaited before the windows open: a browser only allows
+// a new window while it still sees the click that asked for it, and drawing the card takes time.
+function sendInvite(mode){
+  const h = curHouse(), lg = $("#ivLang").value;
+  const hasWa = !!waDigits(h), hasMail = validEmail(h.email);
+  if(mode === "mail" && !hasMail){
+    invMsg(A("Pas d'adresse e-mail valide pour ce foyer : saisissez-la dans le champ E-mail ci-dessus.",
+             "No valid e-mail address for this household: enter it in the E-mail field above."), "bad"); return; }
+  const doWa = mode === "wa" || (mode === "both" && hasWa);
+  const doMail = mode === "mail" || (mode === "both" && hasMail);
+  if(!doWa && !doMail){
+    invMsg(A("Ajoutez un numéro WhatsApp ou une adresse e-mail pour ce foyer.",
+             "Add a WhatsApp number or an e-mail address for this household."), "bad"); return; }
+  const mobile = isMobileDevice(), app = mailApp();
+  const textWa = inviteText(h, lg), textMail = inviteText(h, lg, "", true);
+  const urls = {wa: doWa ? waLink(h, textWa) : "",
+                mail: doMail ? mailLink(app, String(h.email||"").trim(), inviteSubject(lg), textMail) : ""};
+  const cardP = cardBlob();
+  // the card goes onto the clipboard now, as a promise, so it can still be drawing while this happens
+  const clipOK = !mobile && !!(navigator.clipboard && navigator.clipboard.write && window.ClipboardItem);
+  const clipP = clipOK
+    ? navigator.clipboard.write([new ClipboardItem({"image/png": cardP})]).then(()=>true, ()=>false)
+    : Promise.resolve(false);
+  const opened = {wa:false, mail:false};
+  const pop = url => { const w = window.open(url, "_blank"); if(w){ try{ w.opener = null; }catch(e){} } return !!w; };
+  if(!mobile){
+    if(doWa) opened.wa = pop(urls.wa);
+    if(doMail){ if(app === "mailto"){ goMail(urls.mail); opened.mail = true; } else opened.mail = pop(urls.mail); }
   }
-  // computer: WhatsApp opens with the card's link first, which it renders as a preview
-  window.open("https://wa.me/"+waNumber(h)+"?text="+encodeURIComponent(text), "_blank");
-  await markSent(h);
-  msg.innerHTML = cardUrl
-    ? '<div class="msg good">'+A("WhatsApp est ouvert, la carte en aperçu en haut du message. Appuyez sur Envoyer.",
-        "WhatsApp is open with the card previewed at the top of the message. Press send.")+"</div>"
-    : '<div class="msg bad">'+A("La carte n'a pas pu être mise en ligne : collez la clé d'administration dans Données & sauvegarde, sinon seul le texte part.",
-        "The card could not be uploaded: paste the admin key under Données & sauvegarde, otherwise only the text goes.")+"</div>";
+  invMsg("…");
+  finishSend(h, {doWa:doWa, doMail:doMail, mobile:mobile, app:app, urls:urls, opened:opened, cardP:cardP, clipP:clipP, textWa:textWa});
+}
+async function finishSend(h, o){
+  let cancelled = false;
+  if(o.mobile && o.doWa){                         // phone: the share sheet, with the card attached
+    try{
+      const blob = await o.cardP, file = blob ? new File([blob], "invitation-"+h.code+".png", {type:"image/png"}) : null;
+      if(file && navigator.canShare && navigator.canShare({files:[file]})){
+        await navigator.share({files:[file], text:o.textWa}); o.opened.wa = true;
+      } else o.opened.wa = !!window.open(o.urls.wa, "_blank");
+    }catch(e){ if(e && e.name === "AbortError") cancelled = true; }
+  }
+  if(cancelled){ invMsg(""); return; }
+  const copied = await o.clipP;
+  let downloaded = false;
+  if(!o.mobile && !copied){                       // no clipboard support: hand over the file instead
+    try{
+      const blob = await o.cardP, a = document.createElement("a");
+      a.href = URL.createObjectURL(blob); a.download = "invitation-"+h.code+".png"; a.click(); downloaded = true;
+    }catch(e){}
+  }
+  const sent = []; if(o.opened.wa) sent.push("wa"); if(o.opened.mail) sent.push("mail");
+  if(sent.length) await markSentVia(h, sent);
+  showSendResult(h, o, copied, downloaded);
+}
+function showSendResult(h, o, copied, downloaded){
+  const row = (ok, label, url, ch) => {
+    const again = '<a target="_blank" rel="noopener" href="'+esc(url)+'" data-sentch="'+ch+'" class="'+(ok?"mini":"btn sm gold")+'" style="margin-left:8px">'+
+      (ok ? A("Rouvrir","Open again") : A("Ouvrir","Open")+" "+label)+"</a>";
+    if(ok) return '<p style="margin:0 0 8px"><b style="color:#3F5E3B">✓</b> '+label+" "+A("ouvert","opened")+again+"</p>";
+    if(o.mobile && ch === "mail") return '<p style="margin:0 0 8px"><b style="color:#B08D4F">→</b> '+label+" : "+A("prêt, touchez pour l'ouvrir.","ready, tap to open.")+again+"</p>";
+    return '<p style="margin:0 0 8px"><b style="color:#9D5B4E">!</b> '+label+" : "+
+      A("le navigateur a bloqué l'ouverture de la fenêtre.","the browser blocked the window from opening.")+again+"</p>";
+  };
+  let html = "";
+  if(o.doWa)   html += row(o.opened.wa, "WhatsApp", o.urls.wa, "wa");
+  if(o.doMail) html += row(o.opened.mail, A("E-mail","E-mail"), o.urls.mail, "mail");
+  if(!o.mobile && copied)
+    html += '<p class="small" style="margin:10px 0 0"><b>'+A("La carte est copiée.","The card is copied.")+"</b> "+
+      A("Dans WhatsApp et dans l'e-mail, collez-la avec Ctrl+V (Cmd+V sur Mac), puis envoyez.",
+        "In WhatsApp and in the e-mail, paste it with Ctrl+V (Cmd+V on a Mac), then send.")+"</p>";
+  else if(!o.mobile && downloaded)
+    html += '<p class="small" style="margin:10px 0 0">'+A("Ce navigateur n'a pas pu copier la carte : elle a été téléchargée. Glissez-la dans la conversation et dans l'e-mail.",
+      "This browser could not copy the card: it was downloaded. Drag it into the chat and into the e-mail.")+"</p>";
+  else if(o.mobile && o.doMail)
+    html += '<p class="small" style="margin:10px 0 0">'+A("L'e-mail contient le message et le lien de réponse ; la carte part par WhatsApp.",
+      "The e-mail carries the message and the reply link; the card goes by WhatsApp.")+"</p>";
+  html += '<p class="mini" style="margin:12px 0 0">'+A("Vous appuyez vous-même sur Envoyer dans chaque fenêtre.","You press Send yourself in each window.")+
+    ' <a href="#" id="ivUnsend">'+A("Annuler : marquer comme non envoyée","Undo: mark as not sent")+"</a></p>";
+  const m = $("#ivMsg"); if(!m) return;
+  m.innerHTML = '<div class="msg good">'+html+"</div>";
+  $$("[data-sentch]", m).forEach(a=> a.onclick = ()=>{ markSentVia(h, [a.dataset.sentch]); });
+  $("#ivUnsend").onclick = async e=>{ e.preventDefault(); await unsendInvite(h); invMsg(esc(h.household)+" : "+A("marquée comme non envoyée.","marked as not sent.")); };
 }
 
+function syncContactFields(){
+  const h = curHouse(); if(!h || !$("#ivPhone")) return;
+  $("#ivPhone").value = h.phone || ""; $("#ivEmail").value = h.email || "";
+  refreshChannels();
+}
+function refreshChannels(){
+  const h = curHouse(); if(!h || !$("#ivChan")) return;
+  const wa = waDigits(h), em = validEmail(h.email), emRaw = String(h.email||"").trim();
+  $("#ivChan").innerHTML =
+    (wa ? '<b style="color:#3F5E3B">✓</b> WhatsApp : +'+wa : '<b style="color:#9D5B4E">·</b> '+A("pas de numéro WhatsApp","no WhatsApp number")) + "  &nbsp;&nbsp;  " +
+    (em ? '<b style="color:#3F5E3B">✓</b> E-mail : '+esc(emRaw)
+        : '<b style="color:#9D5B4E">·</b> '+(emRaw ? A("adresse e-mail non valide","not a valid e-mail address") : A("pas d'e-mail","no e-mail")));
+  const b = $("#ivSend"); if(!b) return;
+  b.firstElementChild.textContent = wa && em ? A("Envoyer par WhatsApp et e-mail","Send on WhatsApp and e-mail")
+    : wa ? A("Envoyer par WhatsApp","Send on WhatsApp")
+    : em ? A("Envoyer par e-mail","Send by e-mail") : A("Ajoutez un contact pour envoyer","Add a contact to send");
+  b.disabled = !(wa || em);
+}
+function nextUnsent(){
+  const i = S.guests.findIndex(h=>h.id === $("#ivWho").value), n = S.guests.length;
+  for(let k=1; k<=n; k++){ const h = S.guests[(i+k) % n]; if(!h.sent) return h; }
+  return null;
+}
 function logInvites(){
-  $("#ivLog").innerHTML = S.guests.map(h=>{
-    const r = S.rsvps[h.code];
+  const el = $("#ivLog"); if(!el) return;
+  const when = iso => new Date(iso).toLocaleDateString();
+  el.innerHTML = S.guests.map(h=>{
+    const r = S.rsvps[h.code], via = h.sentVia || {};
+    const chips = [via.wa ? '<span class="tag yes" title="'+when(via.wa)+'">WhatsApp</span>' : "",
+                   via.mail ? '<span class="tag yes" title="'+when(via.mail)+'">E-mail</span>' : ""].filter(Boolean).join(" ");
     const inv = h.sent
-      ? '<span class="tag yes">'+A("Envoyée","Sent")+"</span>"+(h.sentAt?'<div class="mini">'+
-          new Date(h.sentAt).toLocaleDateString()+"</div>":"")
+      ? (chips || '<span class="tag yes">'+A("Envoyée","Sent")+"</span>") + (h.sentAt ? '<div class="mini">'+when(h.sentAt)+"</div>" : "")
       : '<span class="tag wait">'+A("À envoyer","To send")+"</span>";
     const rep = !r ? '<span class="tag">'+A("En attente","Awaiting")+"</span>"
       : (r.people.some(p=>p.attending)
           ? '<span class="tag yes">'+r.people.filter(p=>p.attending).length+" / "+r.people.length+" "+A("présents","coming")+"</span>"
           : '<span class="tag no">'+A("Excusés","Declined")+"</span>");
-    return "<tr><td><b>"+esc(h.household)+'</b>'+(waNumber(h)?"":'<div class="mini">'+A("pas de numéro","no number")+"</div>")+
+    const flags = [waDigits(h) ? "" : A("pas de numéro","no number"), validEmail(h.email) ? "" : A("pas d'e-mail","no e-mail")].filter(Boolean).join(" · ");
+    return "<tr><td><b>"+esc(h.household)+"</b>"+(flags ? '<div class="mini">'+flags+"</div>" : "")+
       '</td><td style="font-family:monospace">'+esc(h.code)+"</td><td>"+inv+"</td><td>"+rep+
       '</td><td><button class="tbtn" data-ivp="'+h.id+'">'+A("Ouvrir","Open")+"</button></td></tr>";
   }).join("");
-  $$("[data-ivp]").forEach(b=> b.onclick = ()=>{ $("#ivWho").value = b.dataset.ivp; drawInvite(); });
+  $$("[data-ivp]").forEach(b=> b.onclick = ()=>{ $("#ivWho").value = b.dataset.ivp; syncContactFields(); drawInvite(); });
 }
 
 const inviteImg = new Image();
