@@ -172,6 +172,10 @@ p{margin:0 0 1em} p:last-child{margin-bottom:0}
 .btn.ghost{background:transparent;color:var(--accent)}
 .btn.ghost:hover{color:#fff}
 .btn.light{background:transparent;border-color:rgba(255,255,255,.55);color:#fff}
+.btn.light.gold{background:var(--gold);border-color:var(--gold);color:#1B2A3C}
+.btn.light.gold::after{background:#1B2A3C}
+.btn.light.gold:hover{color:#fff;border-color:#fff}
+.btn.light.ghost{border-color:rgba(255,255,255,.3)}
 .btn.light::after{background:#fff}
 .btn.light:hover{color:var(--ink);border-color:#fff}
 .btn.sm{padding:9px 16px;font-size:11.5px}
@@ -257,12 +261,20 @@ p{margin:0 0 1em} p:last-child{margin-bottom:0}
 .info .ic svg{width:24px;height:24px}
 
 /* ---------- floor plan ---------- */
-.planwrap{position:relative;height:540px;overflow:hidden;border:1px solid var(--rule);
+.planwrap{position:relative;height:620px;overflow:hidden;border:1px solid var(--rule);border-radius:4px;
   background:
-    radial-gradient(circle at 50% 40%,rgba(176,141,79,.09),transparent 62%),
-    linear-gradient(rgba(27,36,50,.045) 1px,transparent 1px) 0 0/30px 30px,
-    linear-gradient(90deg,rgba(27,36,50,.045) 1px,transparent 1px) 0 0/30px 30px,
+    radial-gradient(circle at 50% 12%,rgba(176,141,79,.14),transparent 56%),
+    radial-gradient(circle at 50% 40%,rgba(176,141,79,.08),transparent 62%),
+    linear-gradient(rgba(27,36,50,.04) 1px,transparent 1px) 0 0/30px 30px,
+    linear-gradient(90deg,rgba(27,36,50,.04) 1px,transparent 1px) 0 0/30px 30px,
     #FBF9F4;touch-action:none}
+.pt-mark{position:absolute;top:-11px;left:50%;transform:translateX(-50%);width:24px;height:24px;border-radius:50%;
+  background:var(--paper);border:1.5px solid var(--gold);display:flex;align-items:center;justify-content:center;color:var(--gold);
+  box-shadow:0 3px 8px -3px rgba(27,36,50,.35)}
+.pt-mark-photo{background-size:cover;background-position:center 20%;border-color:var(--gold)}
+.pt.rect .pt-mark{top:-13px}
+.pt.full{background:rgba(63,94,59,.08);border-color:#3F5E3B}
+.pt.full small{color:#3F5E3B;font-weight:600}
 .pt{position:absolute;transform:translate(-50%,-50%);border-radius:50%;border:1.5px solid var(--accent);
   background:rgba(255,255,255,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;
   text-align:center;cursor:grab;user-select:none;box-shadow:0 8px 20px -12px rgba(27,36,50,.6);transition:box-shadow .25s}
@@ -557,7 +569,8 @@ table.t tr:hover td{background:#F4F7FA}
       </div>
       <div class="hero-act">
         <a class="btn light" href="#rsvp"><span data-t="hero.cta">Répondre</span></a>
-        <a class="btn light" href="#schedule"><span data-t="hero.cta2">Le programme</span></a>
+        <a class="btn light gold" href="#registry"><span data-t="hero.cta3">Offrir un cadeau</span></a>
+        <a class="btn light ghost" href="#schedule"><span data-t="hero.cta2">Le programme</span></a>
       </div>
     </div>
     <div class="scroll-cue"><span data-t="hero.scroll">DÉFILER</span><i></i></div>
@@ -578,6 +591,15 @@ table.t tr:hover td{background:#F4F7FA}
         <div class="frame archf"><img id="storyImg" alt=""></div>
         <figcaption data-t="story.cap">La demande officielle</figcaption>
       </figure>
+    </div>
+  </div>
+
+  <div class="band tight center" id="sec-give">
+    <div class="wrap narrow center rv">
+      <p class="label" data-t="home.give.k"></p>
+      <h2 class="h-section" style="margin:12px 0 14px" data-t="home.give.h"></h2>
+      <p class="lede" style="margin-bottom:22px" data-t="home.give.p"></p>
+      <a class="btn gold" href="#registry"><span data-t="hero.cta3">Offrir un cadeau</span></a>
     </div>
   </div>
 
@@ -698,6 +720,9 @@ table.t tr:hover td{background:#F4F7FA}
           <div class="step"><b data-t="reg.s3.b"></b><p data-t="reg.s3.p"></p></div>
         </div>
         <p class="small" id="giftNote" style="margin-top:22px;padding-top:18px;border-top:1px solid var(--rule-soft)"></p>
+        <p class="small center" style="margin-top:14px">
+          <a href="#" id="regShareWa">↗ <span data-t="reg.share"></span></a>
+        </p>
       </div>
     </div>
   </div>
@@ -1114,7 +1139,7 @@ const MEDIA = {"h1": "h1.jpg", "h2": "h2.jpg", "h3": "h3.jpg", "h4": "h4.jpg", "
 const SHOOT_LIST = [{"id": "s_857A2147", "fr": "Devant le cœur de roses", "en": "Before the heart of roses"}, {"id": "s_857A2148", "fr": "Devant le cœur de roses", "en": "Before the heart of roses"}, {"id": "s_857A2152", "fr": "Les fleurs", "en": "The flowers"}, {"id": "s_857A2158", "fr": "Assise, les roses dans les bras", "en": "Seated, roses in her arms"}, {"id": "s_857A2166", "fr": "Le rire qui a tout dit", "en": "The laugh that said everything"}, {"id": "s_857A2174", "fr": "Un instant à eux", "en": "A moment of their own"}, {"id": "s_857A2183", "fr": "Le baiser", "en": "The kiss"}, {"id": "s_857A2184", "fr": "Le baiser", "en": "The kiss"}, {"id": "s_857A2235", "fr": "Le champagne", "en": "Champagne"}, {"id": "s_857A2239", "fr": "Front contre front", "en": "Forehead to forehead"}, {"id": "s_857A2242", "fr": "Elle, lui, et rien d'autre", "en": "Her, him, and nothing else"}, {"id": "s_857A2246", "fr": "Les yeux dans les yeux", "en": "Eye to eye"}, {"id": "s_DSC02026", "fr": "L'escalier, avant tout", "en": "The staircase, before everything"}, {"id": "s_DSC02044", "fr": "Les yeux bandés", "en": "Blindfolded"}, {"id": "s_DSC02053", "fr": "Le oui", "en": "The yes"}, {"id": "s_DSC02083", "fr": "Un genou à terre", "en": "Down on one knee"}, {"id": "s_DSC02104", "fr": "L'étreinte", "en": "The embrace"}, {"id": "s_DSC02107", "fr": "« Will you marry me »", "en": "« Will you marry me »"}, {"id": "s_DSC02113", "fr": "La demande", "en": "The proposal"}, {"id": "s_DSC02114", "fr": "La bague", "en": "The ring"}, {"id": "s_DSC02117", "fr": "Fiancés", "en": "Engaged"}, {"id": "s_DSC02128", "fr": "Main dans la main", "en": "Hand in hand"}, {"id": "s_DSC02141", "fr": "Portée", "en": "Carried"}];
 
 /* ---------- cloud sync (Supabase REST, no SDK, no build step) ---------- */
-const BUILD = "28 oct. 2026, r14";
+const BUILD = "28 oct. 2026, r15";
 const CLOUD = {url:"", anon:"", admin:"", on:false, hydrated:false, lastError:"", lastSync:null,
                dirty:new Set(), errLog:[], boot:null, bootTried:false, lastCheck:null};
 const LSK = "mn-admin-key";
@@ -1374,6 +1399,11 @@ const T = {
 "nav.book":{fr:"Livre d'or",en:"Guest book"},"nav.rsvp":{fr:"Répondre",en:"RSVP"},
 "hero.cta":{fr:"Répondre à l'invitation",en:"Reply to your invitation"},
 "hero.cta2":{fr:"Voir le programme",en:"See the schedule"},
+  "hero.cta3":{fr:"Offrir un cadeau",en:"Give a gift"},
+  "home.give.k":{fr:"Pour ceux qui ne peuvent être des nôtres",en:"For those who can't be with us"},
+  "home.give.h":{fr:"Vous n'avez pas besoin d'y être pour nous gâter","en":"You don't need to be there to spoil us"},
+  "home.give.p":{fr:"Que vous soyez invité·e, empêché·e, ou simplement de passage sur cette page : la liste est ouverte à tous ceux qui veulent y participer.",
+                 en:"Whether you're invited, unable to make it, or just passing through this page: the registry is open to anyone who'd like to take part."},
 "hero.scroll":{fr:"DÉFILER",en:"SCROLL"},
 "fact.date":{fr:"La date",en:"The date"},"fact.where":{fr:"Le lieu",en:"The place"},
 "fact.dress":{fr:"La tenue",en:"Dress code"},"fact.rsvp":{fr:"Répondre avant le",en:"Reply by"},
@@ -1602,13 +1632,7 @@ registry:[{"id": "g01", "icon": "sofa", "price": 35000, "group": true, "always":
 
 guests:[{"id": "h1", "code": "MN-1001", "household": "Helene", "side": "g", "group": "famille", "phone": "", "email": "", "seats": 2, "expected": 1, "preconfirmed": true, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1001_1", "name": "Helene"}, {"id": "m1001_2", "name": "Invité·e 2 de Helene"}], "sent": false}, {"id": "h2", "code": "MN-1002", "household": "Veronique", "side": "g", "group": "famille", "phone": "", "email": "", "seats": 4, "expected": 4, "preconfirmed": true, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1002_1", "name": "Veronique"}, {"id": "m1002_2", "name": "Invité·e 2 de Veronique"}, {"id": "m1002_3", "name": "Invité·e 3 de Veronique"}, {"id": "m1002_4", "name": "Invité·e 4 de Veronique"}], "sent": false}, {"id": "h3", "code": "MN-1003", "household": "Dieudonne", "side": "g", "group": "famille", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": true, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1003_1", "name": "Dieudonne"}], "sent": false}, {"id": "h4", "code": "MN-1004", "household": "Mirielle", "side": "g", "group": "famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": true, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1004_1", "name": "Mirielle"}, {"id": "m1004_2", "name": "Invité·e 2 de Mirielle"}], "sent": false}, {"id": "h5", "code": "MN-1005", "household": "Arlette", "side": "g", "group": "famille", "phone": "", "email": "", "seats": 3, "expected": 2, "preconfirmed": true, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1005_1", "name": "Arlette"}, {"id": "m1005_2", "name": "Invité·e 2 de Arlette"}, {"id": "m1005_3", "name": "Invité·e 3 de Arlette"}], "sent": false}, {"id": "h6", "code": "MN-1006", "household": "Daniel", "side": "g", "group": "famille", "phone": "", "email": "", "seats": 6, "expected": 6, "preconfirmed": true, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1006_1", "name": "Daniel"}, {"id": "m1006_2", "name": "Invité·e 2 de Daniel"}, {"id": "m1006_3", "name": "Invité·e 3 de Daniel"}, {"id": "m1006_4", "name": "Invité·e 4 de Daniel"}, {"id": "m1006_5", "name": "Invité·e 5 de Daniel"}, {"id": "m1006_6", "name": "Invité·e 6 de Daniel"}], "sent": false}, {"id": "h7", "code": "MN-1007", "household": "Eric", "side": "g", "group": "famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": true, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1007_1", "name": "Eric"}, {"id": "m1007_2", "name": "Invité·e 2 de Eric"}], "sent": false}, {"id": "h8", "code": "MN-1008", "household": "Thierry", "side": "g", "group": "famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": true, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1008_1", "name": "Thierry"}, {"id": "m1008_2", "name": "Invité·e 2 de Thierry"}], "sent": false}, {"id": "h9", "code": "MN-1009", "household": "Henri & Muclare", "side": "g", "group": "famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": true, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1009_1", "name": "Henri"}, {"id": "m1009_2", "name": "Muclare"}], "sent": false}, {"id": "h10", "code": "MN-1010", "household": "Toton Placide Kabala", "side": "g", "group": "famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1010_1", "name": "Toton Placide Kabala"}, {"id": "m1010_2", "name": "Invité·e 2 de Toton Placide Kabala"}], "sent": false}, {"id": "h11", "code": "MN-1011", "household": "Senior Kabala", "side": "g", "group": "famille", "phone": "", "email": "", "seats": 2, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1011_1", "name": "Senior Kabala"}, {"id": "m1011_2", "name": "Invité·e 2 de Senior Kabala"}], "sent": false}, {"id": "h12", "code": "MN-1012", "household": "Mirielle Banza", "side": "g", "group": "famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1012_1", "name": "Mirielle Banza"}, {"id": "m1012_2", "name": "Invité·e 2 de Mirielle Banza"}], "sent": false}, {"id": "h13", "code": "MN-1013", "household": "Tantine Dianda", "side": "g", "group": "famille", "phone": "", "email": "", "seats": 3, "expected": 3, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1013_1", "name": "Tantine Dianda"}, {"id": "m1013_2", "name": "Invité·e 2 de Tantine Dianda"}, {"id": "m1013_3", "name": "Invité·e 3 de Tantine Dianda"}], "sent": false}, {"id": "h14", "code": "MN-1014", "household": "Tonton Aidevous", "side": "g", "group": "famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1014_1", "name": "Tonton Aidevous"}, {"id": "m1014_2", "name": "Invité·e 2 de Tonton Aidevous"}], "sent": false}, {"id": "h15", "code": "MN-1015", "household": "Sophie", "side": "g", "group": "famille", "phone": "", "email": "", "seats": 4, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1015_1", "name": "Sophie"}, {"id": "m1015_2", "name": "Invité·e 2 de Sophie"}, {"id": "m1015_3", "name": "Invité·e 3 de Sophie"}, {"id": "m1015_4", "name": "Invité·e 4 de Sophie"}], "sent": false}, {"id": "h16", "code": "MN-1016", "household": "Pathy", "side": "g", "group": "famille", "phone": "", "email": "", "seats": 2, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1016_1", "name": "Pathy"}, {"id": "m1016_2", "name": "Invité·e 2 de Pathy"}], "sent": false}, {"id": "h17", "code": "MN-1017", "household": "Felix & Doris", "side": "g", "group": "famille", "phone": "", "email": "", "seats": 4, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1017_1", "name": "Felix"}, {"id": "m1017_2", "name": "Doris"}, {"id": "m1017_3", "name": "Invité·e 3 de Felix"}, {"id": "m1017_4", "name": "Invité·e 4 de Felix"}], "sent": false}, {"id": "h18", "code": "MN-1018", "household": "Nic-Land Kolela", "side": "g", "group": "amis", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1018_1", "name": "Nic-L"}], "sent": false}, {"id": "h19", "code": "MN-1019", "household": "Dieudonne Byabene", "side": "g", "group": "amis", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1019_1", "name": "Dieudonne Byabene"}, {"id": "m1019_2", "name": "Invité·e 2 de Dieudonne Byabene"}], "sent": false}, {"id": "h20", "code": "MN-1020", "household": "Ephraim Kalonji", "side": "g", "group": "amis", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1020_1", "name": "Ephraim Kalonji"}, {"id": "m1020_2", "name": "Invité·e 2 de Ephraim Kalonji"}], "sent": false}, {"id": "h21", "code": "MN-1021", "household": "Leon Chenge", "side": "g", "group": "amis", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1021_1", "name": "Leon Chenge"}, {"id": "m1021_2", "name": "Invité·e 2 de Leon Chenge"}], "sent": false}, {"id": "h22", "code": "MN-1022", "household": "Esther Chishibanji", "side": "g", "group": "amis", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1022_1", "name": "Esther Chishibanji"}], "sent": false}, {"id": "h23", "code": "MN-1023", "household": "Catherine Namayega", "side": "g", "group": "amis", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1023_1", "name": "Catherine Namayega"}], "sent": false}, {"id": "h24", "code": "MN-1024", "household": "Sophia M'zimbes", "side": "g", "group": "amis", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1024_1", "name": "Sophia M'zimbes"}], "sent": false}, {"id": "h25", "code": "MN-1025", "household": "Elie Wasa", "side": "g", "group": "amis", "phone": "", "email": "", "seats": 2, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1025_1", "name": "Elie Wasa"}, {"id": "m1025_2", "name": "Invité·e 2 de Elie Wasa"}], "sent": false}, {"id": "h26", "code": "MN-1026", "household": "Kevin Ejiba", "side": "g", "group": "amis", "phone": "", "email": "", "seats": 2, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1026_1", "name": "Kevin Ejiba"}, {"id": "m1026_2", "name": "Invité·e 2 de Kevin Ejiba"}], "sent": false}, {"id": "h27", "code": "MN-1027", "household": "Humphrey Bande", "side": "g", "group": "église", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1027_1", "name": "Humphrey Bande"}, {"id": "m1027_2", "name": "Invité·e 2 de Humphrey Bande"}], "sent": false}, {"id": "h28", "code": "MN-1028", "household": "Joelle & Joshua", "side": "g", "group": "église", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1028_1", "name": "Joelle"}, {"id": "m1028_2", "name": "Joshua"}], "sent": false}, {"id": "h29", "code": "MN-1029", "household": "Beks", "side": "g", "group": "église", "phone": "", "email": "", "seats": 1, "expected": 0, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1029_1", "name": "Beks"}], "sent": false}, {"id": "h30", "code": "MN-1030", "household": "Councilia", "side": "g", "group": "église", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1030_1", "name": "Councilia"}, {"id": "m1030_2", "name": "Invité·e 2 de Councilia"}], "sent": false}, {"id": "h31", "code": "MN-1031", "household": "Joshua & Debrorah Matesun", "side": "g", "group": "église", "phone": "", "email": "", "seats": 3, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1031_1", "name": "Joshua"}, {"id": "m1031_2", "name": "Debrorah Matesun"}, {"id": "m1031_3", "name": "Invité·e 3 de Joshua"}], "sent": false}, {"id": "h32", "code": "MN-1032", "household": "Domingo", "side": "g", "group": "église", "phone": "", "email": "", "seats": 2, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1032_1", "name": "Domingo"}, {"id": "m1032_2", "name": "Invité·e 2 de Domingo"}], "sent": false}, {"id": "h33", "code": "MN-1033", "household": "Julie-Ann", "side": "g", "group": "église", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1033_1", "name": "Julie-Ann"}, {"id": "m1033_2", "name": "Invité·e 2 de Julie-Ann"}], "sent": false}, {"id": "h34", "code": "MN-1034", "household": "Shalom Abiodun", "side": "g", "group": "église", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1034_1", "name": "Shalom Abiodun"}], "sent": false}, {"id": "h35", "code": "MN-1035", "household": "Neo", "side": "g", "group": "église", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1035_1", "name": "Neo"}], "sent": false}, {"id": "h36", "code": "MN-1036", "household": "Unathi Lu", "side": "g", "group": "église", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1036_1", "name": "Unathi Lu"}, {"id": "m1036_2", "name": "Invité·e 2 de Unathi Lu"}], "sent": false}, {"id": "h37", "code": "MN-1037", "household": "Mashall & Sibo", "side": "g", "group": "église", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1037_1", "name": "Mashall"}, {"id": "m1037_2", "name": "Sibo"}], "sent": false}, {"id": "h38", "code": "MN-1038", "household": "Mihlali", "side": "g", "group": "église", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1038_1", "name": "Mihlali"}, {"id": "m1038_2", "name": "Invité·e 2 de Mihlali"}], "sent": false}, {"id": "h39", "code": "MN-1039", "household": "Uche Ordor", "side": "g", "group": "église", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1039_1", "name": "Uche Ordor"}, {"id": "m1039_2", "name": "Invité·e 2 de Uche Ordor"}], "sent": false}, {"id": "h40", "code": "MN-1040", "household": "Hangala Siachiwena", "side": "g", "group": "église", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1040_1", "name": "Hangala Siachiwena"}], "sent": false}, {"id": "h41", "code": "MN-1041", "household": "Pepe Medar Kabamba", "side": "b", "group": "famille", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1041_1", "name": "Pepe Medar Kabamba"}], "sent": false}, {"id": "h42", "code": "MN-1042", "household": "Meme Agnes Ntumba", "side": "b", "group": "famille", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1042_1", "name": "Meme Agnes Ntumba"}], "sent": false}, {"id": "h43", "code": "MN-1043", "household": "Ghyslain Kabamba", "side": "b", "group": "famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1043_1", "name": "Ghyslain Kabamba"}, {"id": "m1043_2", "name": "Invité·e 2 de Ghyslain Kabamba"}], "sent": false}, {"id": "h44", "code": "MN-1044", "household": "Yolande Ntambwe", "side": "b", "group": "famille", "phone": "", "email": "", "seats": 3, "expected": 3, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1044_1", "name": "Yolande Ntambwe"}, {"id": "m1044_2", "name": "Invité·e 2 de Yolande Ntambwe"}, {"id": "m1044_3", "name": "Invité·e 3 de Yolande Ntambwe"}], "sent": false}, {"id": "h45", "code": "MN-1045", "household": "Cynthia Kabamba", "side": "b", "group": "famille", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1045_1", "name": "Cynthia Kabamba"}], "sent": false}, {"id": "h46", "code": "MN-1046", "household": "Gloria Kabamba", "side": "b", "group": "famille", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1046_1", "name": "Gloria Kabamba"}], "sent": false}, {"id": "h47", "code": "MN-1047", "household": "Claudine and Max Makelele", "side": "b", "group": "famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1047_1", "name": "Claudine"}, {"id": "m1047_2", "name": "Max Makelele"}], "sent": false}, {"id": "h48", "code": "MN-1048", "household": "Lydie Meta Mundele", "side": "b", "group": "famille", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1048_1", "name": "Lydie Meta Mundele"}], "sent": false}, {"id": "h49", "code": "MN-1049", "household": "Gedeon Buka", "side": "b", "group": "famille", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1049_1", "name": "Gedeon Buka"}], "sent": false}, {"id": "h50", "code": "MN-1050", "household": "Papa Theo", "side": "b", "group": "famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1050_1", "name": "Papa Theo"}, {"id": "m1050_2", "name": "Invité·e 2 de Papa Theo"}], "sent": false}, {"id": "h51", "code": "MN-1051", "household": "Papa Jean-Marie", "side": "b", "group": "famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1051_1", "name": "Papa Jean-Marie"}, {"id": "m1051_2", "name": "Invité·e 2 de Papa Jean-Marie"}], "sent": false}, {"id": "h52", "code": "MN-1052", "household": "Frida", "side": "b", "group": "famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1052_1", "name": "Frida"}, {"id": "m1052_2", "name": "Invité·e 2 de Frida"}], "sent": false}, {"id": "h53", "code": "MN-1053", "household": "Alda", "side": "b", "group": "famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1053_1", "name": "Alda"}, {"id": "m1053_2", "name": "Invité·e 2 de Alda"}], "sent": false}, {"id": "h54", "code": "MN-1054", "household": "Daniel and Josephine Mundele", "side": "b", "group": "famille", "phone": "", "email": "", "seats": 4, "expected": 4, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1054_1", "name": "Daniel"}, {"id": "m1054_2", "name": "Josephine Mundele"}, {"id": "m1054_3", "name": "Invité·e 3 de Daniel"}, {"id": "m1054_4", "name": "Invité·e 4 de Daniel"}], "sent": false}, {"id": "h55", "code": "MN-1055", "household": "Dad", "side": "b", "group": "famille", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1055_1", "name": "Dad"}], "sent": false}, {"id": "h56", "code": "MN-1056", "household": "Ginette Mundele", "side": "b", "group": "famille", "phone": "", "email": "", "seats": 3, "expected": 3, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1056_1", "name": "Ginette Mundele"}, {"id": "m1056_2", "name": "Invité·e 2 de Ginette Mundele"}, {"id": "m1056_3", "name": "Invité·e 3 de Ginette Mundele"}], "sent": false}, {"id": "h57", "code": "MN-1057", "household": "Maman Chantal Mundele", "side": "b", "group": "famille", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1057_1", "name": "Maman Chantal Mundele"}], "sent": false}, {"id": "h58", "code": "MN-1058", "household": "Maman Cisco", "side": "b", "group": "famille", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1058_1", "name": "Maman Cisco"}], "sent": false}, {"id": "h59", "code": "MN-1059", "household": "Nanamichele Shabani", "side": "b", "group": "famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1059_1", "name": "Nanamichele Shabani"}, {"id": "m1059_2", "name": "Invité·e 2 de Nanamichele Shabani"}], "sent": false}, {"id": "h60", "code": "MN-1060", "household": "Cyril & Belata Kiyoyo", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1060_1", "name": "Cyril"}, {"id": "m1060_2", "name": "Belata Kiyoyo"}], "sent": false}, {"id": "h61", "code": "MN-1061", "household": "Cyril & Ivette Mandombe", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1061_1", "name": "Cyril"}, {"id": "m1061_2", "name": "Ivette Mandombe"}], "sent": false}, {"id": "h62", "code": "MN-1062", "household": "Ephrem & Cathy Kabala", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1062_1", "name": "Ephrem"}, {"id": "m1062_2", "name": "Cathy Kabala"}], "sent": false}, {"id": "h63", "code": "MN-1063", "household": "Albert and Benita Mbelu", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1063_1", "name": "Albert"}, {"id": "m1063_2", "name": "Benita Mbelu"}], "sent": false}, {"id": "h64", "code": "MN-1064", "household": "Jimmy & Mado Amsini", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1064_1", "name": "Jimmy"}, {"id": "m1064_2", "name": "Mado Amsini"}], "sent": false}, {"id": "h65", "code": "MN-1065", "household": "Couple Holen", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1065_1", "name": "Couple Holen"}, {"id": "m1065_2", "name": "Invité·e 2 de Couple Holen"}], "sent": false}, {"id": "h66", "code": "MN-1066", "household": "Sandra et Junior LUPEMBA", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1066_1", "name": "Sandra"}, {"id": "m1066_2", "name": "Junior LUPEMBA"}], "sent": false}, {"id": "h67", "code": "MN-1067", "household": "Freddy & Liliane Kabambi", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1067_1", "name": "Freddy"}, {"id": "m1067_2", "name": "Liliane Kabambi"}], "sent": false}, {"id": "h68", "code": "MN-1068", "household": "Fonteine & Anguy Munkungapyo", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1068_1", "name": "Fonteine"}, {"id": "m1068_2", "name": "Anguy Munkungapyo"}], "sent": false}, {"id": "h69", "code": "MN-1069", "household": "Justine & Junior Kondjo", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1069_1", "name": "Justine"}, {"id": "m1069_2", "name": "Junior Kondjo"}], "sent": false}, {"id": "h70", "code": "MN-1070", "household": "Bruno and Lucette Kalala", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1070_1", "name": "Bruno"}, {"id": "m1070_2", "name": "Lucette Kalala"}], "sent": false}, {"id": "h71", "code": "MN-1071", "household": "Maître Laurent & Madame Yvonne Lukoji", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1071_1", "name": "Maître Laurent"}, {"id": "m1071_2", "name": "Madame Yvonne Lukoji"}], "sent": false}, {"id": "h72", "code": "MN-1072", "household": "Shaneil Dhevpal and Kashmeena Deonarain", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1072_1", "name": "Shaneil Dhevpal"}, {"id": "m1072_2", "name": "Kashmeena Deonarain"}], "sent": false}, {"id": "h73", "code": "MN-1073", "household": "Yusuf pathon and Nasreen Parker", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1073_1", "name": "Yusuf pathon"}, {"id": "m1073_2", "name": "Nasreen Parker"}], "sent": false}, {"id": "h74", "code": "MN-1074", "household": "Nessen Govander & Niroshini Naidoo", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1074_1", "name": "Nessen Govander"}, {"id": "m1074_2", "name": "Niroshini Naidoo"}], "sent": false}, {"id": "h75", "code": "MN-1075", "household": "Abdul Samad Mahomed and Ameera Jhetam", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1075_1", "name": "Abdul Samad Mahomed"}, {"id": "m1075_2", "name": "Ameera Jhetam"}], "sent": false}, {"id": "h76", "code": "MN-1076", "household": "Couple Gafoor", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1076_1", "name": "Couple Gafoor"}, {"id": "m1076_2", "name": "Invité·e 2 de Couple Gafoor"}], "sent": false}, {"id": "h77", "code": "MN-1077", "household": "Dr. J. Roy Moodley & Dr. Dianna Moodley", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1077_1", "name": "Dr. J. Roy Moodley"}, {"id": "m1077_2", "name": "Dr. Dianna Moodley"}], "sent": false}, {"id": "h78", "code": "MN-1078", "household": "couple Tshamala", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1078_1", "name": "couple Tshamala"}, {"id": "m1078_2", "name": "Invité·e 2 de couple Tshamala"}], "sent": false}, {"id": "h79", "code": "MN-1079", "household": "Azim litanga", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1079_1", "name": "Azim litanga"}, {"id": "m1079_2", "name": "Invité·e 2 de Azim litanga"}], "sent": false}, {"id": "h80", "code": "MN-1080", "household": "Adelphonse & Lina Lokangu", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1080_1", "name": "Adelphonse"}], "sent": false}, {"id": "h81", "code": "MN-1081", "household": "Joffrey & Evelyne Nimi", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1081_1", "name": "Joffrey"}, {"id": "m1081_2", "name": "Evelyne Nimi"}], "sent": false}, {"id": "h82", "code": "MN-1082", "household": "Professor Paulain", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1082_1", "name": "Professor Paulain"}, {"id": "m1082_2", "name": "Invité·e 2 de Professor Paulain"}], "sent": false}, {"id": "h83", "code": "MN-1083", "household": "Mamie et Yannick Kulula", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1083_1", "name": "Mamie"}], "sent": false}, {"id": "h84", "code": "MN-1084", "household": "couple Bongo", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1084_1", "name": "couple Bongo"}, {"id": "m1084_2", "name": "Invité·e 2 de couple Bongo"}], "sent": false}, {"id": "h85", "code": "MN-1085", "household": "Francine & alain kabongo", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1085_1", "name": "Francine"}, {"id": "m1085_2", "name": "alain kabongo"}], "sent": false}, {"id": "h86", "code": "MN-1086", "household": "Joel Muangalayi", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1086_1", "name": "Joel Muangalayi"}, {"id": "m1086_2", "name": "Invité·e 2 de Joel Muangalayi"}], "sent": false}, {"id": "h87", "code": "MN-1087", "household": "Maman Ida", "side": "b", "group": "amis de la famille", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1087_1", "name": "Maman Ida"}], "sent": false}, {"id": "h88", "code": "MN-1088", "household": "Pastor & Maman Clarah", "side": "b", "group": "église", "phone": "", "email": "", "seats": 3, "expected": 3, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1088_1", "name": "Pastor"}, {"id": "m1088_2", "name": "Maman Clarah"}, {"id": "m1088_3", "name": "Invité·e 3 de Pastor"}], "sent": false}, {"id": "h89", "code": "MN-1089", "household": "Papa Claude & Maman Nally", "side": "b", "group": "église", "phone": "", "email": "", "seats": 3, "expected": 3, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1089_1", "name": "Papa Claude"}, {"id": "m1089_2", "name": "Maman Nally"}, {"id": "m1089_3", "name": "Invité·e 3 de Papa Claude"}], "sent": false}, {"id": "h90", "code": "MN-1090", "household": "Maman Angel", "side": "b", "group": "église", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1090_1", "name": "Maman Angel"}, {"id": "m1090_2", "name": "Invité·e 2 de Maman Angel"}], "sent": false}, {"id": "h91", "code": "MN-1091", "household": "Bijoux And Pappy Nzeza", "side": "b", "group": "église", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1091_1", "name": "Bijoux And Pappy Nzeza"}, {"id": "m1091_2", "name": "Invité·e 2 de Bijoux And Pappy Nzeza"}], "sent": false}, {"id": "h92", "code": "MN-1092", "household": "Mokambi", "side": "b", "group": "église", "phone": "", "email": "", "seats": 3, "expected": 3, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1092_1", "name": "Mokambi"}, {"id": "m1092_2", "name": "Invité·e 2 de Mokambi"}, {"id": "m1092_3", "name": "Invité·e 3 de Mokambi"}], "sent": false}, {"id": "h93", "code": "MN-1093", "household": "Maman Meya", "side": "b", "group": "église", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1093_1", "name": "Maman Meya"}], "sent": false}, {"id": "h94", "code": "MN-1094", "household": "Maman Lili", "side": "b", "group": "église", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1094_1", "name": "Maman Lili"}], "sent": false}, {"id": "h95", "code": "MN-1095", "household": "Sister Nozipho", "side": "b", "group": "église", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1095_1", "name": "Sister Nozipho"}], "sent": false}, {"id": "h96", "code": "MN-1096", "household": "Nomcebo", "side": "b", "group": "église", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1096_1", "name": "Nomcebo"}], "sent": false}, {"id": "h97", "code": "MN-1097", "household": "Maman Zouzou", "side": "b", "group": "église", "phone": "", "email": "", "seats": 2, "expected": 2, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1097_1", "name": "Maman Zouzou"}, {"id": "m1097_2", "name": "Invité·e 2 de Maman Zouzou"}], "sent": false}, {"id": "h98", "code": "MN-1098", "household": "Sinead Gous", "side": "b", "group": "amis", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1098_1", "name": "Sinead Gous"}], "sent": false}, {"id": "h99", "code": "MN-1099", "household": "Laila Raoof", "side": "b", "group": "amis", "phone": "", "email": "", "seats": 1, "expected": 1, "preconfirmed": false, "events": ["e1", "e2", "e3", "e4", "e5", "e6", "e7"], "people": [{"id": "m1099_1", "name": "Laila Raoof"}], "sent": false}],
 
-tables:[
- {id:"tb1",name:{fr:"Table d'honneur",en:"Top table"},seats:10,x:50,y:20,r:74,shape:"rect"},
- {id:"tb2",name:{fr:"Table 2 — Maloba",en:"Table 2 — Maloba"},seats:10,x:24,y:44,r:62,shape:"round"},
- {id:"tb3",name:{fr:"Table 3 — Mundele",en:"Table 3 — Mundele"},seats:10,x:76,y:44,r:62,shape:"round"},
- {id:"tb4",name:{fr:"Table 4 — Amis de Kin",en:"Table 4 — Kinshasa friends"},seats:10,x:24,y:74,r:62,shape:"round"},
- {id:"tb5",name:{fr:"Table 5 — Église",en:"Table 5 — Church"},seats:10,x:76,y:74,r:62,shape:"round"}
-],
+tables:[{"id": "tb1", "name": {"fr": "Table d'honneur", "en": "Top table"}, "seats": 12, "x": 50, "y": 10, "r": 78, "shape": "rect", "mark": "couple"}, {"id": "tb2", "name": {"fr": "Famille Maloba I", "en": "Maloba family I"}, "seats": 10, "x": 31, "y": 30, "r": 62, "shape": "round", "mark": "ring"}, {"id": "tb3", "name": {"fr": "Famille Maloba II", "en": "Maloba family II"}, "seats": 10, "x": 50, "y": 30, "r": 62, "shape": "round", "mark": "heart"}, {"id": "tb4", "name": {"fr": "Famille Mundele I", "en": "Mundele family I"}, "seats": 10, "x": 69, "y": 30, "r": 62, "shape": "round", "mark": "heart"}, {"id": "tb5", "name": {"fr": "Famille Mundele II", "en": "Mundele family II"}, "seats": 10, "x": 88, "y": 30, "r": 62, "shape": "round", "mark": "dove"}, {"id": "tb6", "name": {"fr": "Amis de Kinshasa I", "en": "Kinshasa friends I"}, "seats": 10, "x": 12, "y": 52, "r": 62, "shape": "round", "mark": "leaf"}, {"id": "tb7", "name": {"fr": "Amis de Kinshasa II", "en": "Kinshasa friends II"}, "seats": 10, "x": 31, "y": 52, "r": 62, "shape": "round", "mark": "leaf"}, {"id": "tb8", "name": {"fr": "Église I", "en": "Church I"}, "seats": 10, "x": 50, "y": 52, "r": 62, "shape": "round", "mark": "lantern"}, {"id": "tb9", "name": {"fr": "Église II", "en": "Church II"}, "seats": 10, "x": 69, "y": 52, "r": 62, "shape": "round", "mark": "lantern"}, {"id": "tb10", "name": {"fr": "Amis de la famille I", "en": "Family friends I"}, "seats": 10, "x": 88, "y": 52, "r": 62, "shape": "round", "mark": "teacup"}, {"id": "tb11", "name": {"fr": "Amis de la famille II", "en": "Family friends II"}, "seats": 10, "x": 12, "y": 74, "r": 62, "shape": "round", "mark": "teacup"}, {"id": "tb12", "name": {"fr": "Collègues", "en": "Colleagues"}, "seats": 10, "x": 31, "y": 74, "r": 62, "shape": "round", "mark": "compass"}, {"id": "tb13", "name": {"fr": "Voisins", "en": "Neighbours"}, "seats": 10, "x": 50, "y": 74, "r": 62, "shape": "round", "mark": "sun"}, {"id": "tb14", "name": {"fr": "Cousins Maloba", "en": "Maloba cousins"}, "seats": 10, "x": 69, "y": 74, "r": 62, "shape": "round", "mark": "star"}, {"id": "tb15", "name": {"fr": "Cousins Mundele", "en": "Mundele cousins"}, "seats": 10, "x": 88, "y": 74, "r": 62, "shape": "round", "mark": "star"}, {"id": "tb16", "name": {"fr": "Amis de Mathi", "en": "Mathi's friends"}, "seats": 10, "x": 12, "y": 96, "r": 62, "shape": "round", "mark": "wine"}, {"id": "tb17", "name": {"fr": "Amis de Nana", "en": "Nana's friends"}, "seats": 10, "x": 31, "y": 96, "r": 62, "shape": "round", "mark": "wine"}, {"id": "tb18", "name": {"fr": "Oncles & tantes", "en": "Aunts & uncles"}, "seats": 10, "x": 50, "y": 96, "r": 62, "shape": "round", "mark": "sun"}, {"id": "tb19", "name": {"fr": "Grands-parents", "en": "Grandparents"}, "seats": 10, "x": 69, "y": 96, "r": 62, "shape": "round", "mark": "dove"}, {"id": "tb20", "name": {"fr": "Jeunesse", "en": "The young table"}, "seats": 10, "x": 88, "y": 96, "r": 62, "shape": "round", "mark": "star"}],
 
 fixtures:[
  {id:"f1",label:{fr:"Scène & DJ",en:"Stage & DJ"},x:50,y:6,w:180,h:40},
@@ -1824,6 +1848,7 @@ Object.assign(T, {
   "rs.choose":{fr:"Choisissez oui ou non avant d'envoyer.",en:"Please choose yes or no before sending."},
   "rs.sentyes":{fr:"C'est enregistré. Merci, nous avons hâte de vous voir.",en:"Saved. Thank you, we can't wait to see you."},
   "rs.sentno":{fr:"C'est enregistré. Merci de nous avoir prévenus, vous nous manquerez.",en:"Saved. Thank you for letting us know, you will be missed."},
+  "reg.share":{fr:"Partager la liste par WhatsApp",en:"Share the list on WhatsApp"},
   "gl.fail":{fr:"Les photos ne se chargent pas pour le moment. Rechargez la page dans quelques instants.",
              en:"The photographs are not loading right now. Please reload the page in a moment."},
   "rs.fail":{fr:"Votre réponse n'a pas pu être envoyée. Vérifiez votre connexion et réessayez. Si cela continue, écrivez-nous.",
@@ -2075,21 +2100,69 @@ async function renderVenue(){
     "</h4><p>"+esc(L(b.p))+"</p></div>").join("");
   drawPlan($("#publicPlan"), false);
 }
+let coupleMarkImg = "";
+async function ensureCoupleMark(){
+  if(!coupleMarkImg) coupleMarkImg = (await pix("invite")) || (await pix("pgroom")) || "";
+  return coupleMarkImg;
+}
+/* ---------- who is seated: confirmed yes, or not yet answered (provisional) ---------- */
+// Everyone invited gets a seat as soon as the plan is drawn, so you can lay out the room today.
+// A reply of "no" removes those seats automatically; a reply of "yes" simply confirms them.
 function tableOccupants(tbId){
-  const out = [];
-  Object.values(S.rsvps).forEach(r=> r.people.forEach(p=>{
-    if(p.attending && S.seating[r.code+":"+p.id]===tbId) out.push(p.name); }));
-  return out;
+  return attendees().filter(p=> S.seating[p.key]===tbId).map(p=>p.name);
+}
+function seatOf(key){ return S.seating[key]; }
+function tableLabel(tb){ return L(tb.name); }
+
+function findSeat(){
+  const q = $("#seatQ").value.trim(), box = $("#seatAns");
+  if(!q){ box.innerHTML = ""; return; }
+  const tokens = norm(q).split(" ").filter(Boolean);
+  const all = attendees();
+  const found = all.filter(p=> S.seating[p.key] && tokens.every(t=> norm(p.name+" "+p.house).indexOf(t) > -1));
+  if(!found.length){ box.innerHTML = '<div class="msg">'+t("vn.seatno")+"</div>"; drawPlan($("#publicPlan"), false); return; }
+  const tbOf = f => S.tables.find(x=>x.id===S.seating[f.key]);
+  const lines = found.slice(0,6).map(f=> t("vn.seatis",{"__N__":esc(f.name),"__T__":esc(tableLabel(tbOf(f)))}));
+  const first = found[0], tb = tbOf(first);
+  const mates = tableOccupants(tb.id).filter(n=>n!==first.name);
+  box.innerHTML = '<div class="msg good">'+lines.join("<br>")+(found.length>6?"<br>…":"")+
+    (found.length===1 && mates.length ? " "+t("vn.with")+" : "+mates.map(esc).join(", ") : "")+"</div>";
+  drawPlan($("#publicPlan"), false, tb.id);
+}
+
+/* ---------- a beautiful floor plan ---------- */
+// A handful of warm line-icons so each table can carry a small mark of its own — a heart for the
+// top table, a teacup for a family table, and so on — rather than every card looking the same.
+const TABLE_MARKS = {
+  heart:  '<path d="M12 20s-7-4.4-9.4-8.7C1.1 8.2 2.6 5 6 5c2 0 3.3 1.1 4 2.4C10.7 6.1 12 5 14 5c3.4 0 4.9 3.2 3.4 6.3C15 15.6 12 20 12 20z"/>',
+  ring:   '<circle cx="9" cy="14.5" r="4.6"/><circle cx="15" cy="14.5" r="4.6"/><path d="M8 6l4-3 4 3"/>',
+  leaf:   '<path d="M5 19c9 0 13-6 13-15C9 4 5 9 5 19z"/><path d="M5 19C11 13 15 9 18 4"/>',
+  star:   '<path d="M12 3l2.4 5.8L21 9.5l-4.6 4.2L17.6 21 12 17.6 6.4 21l1.2-7.3L3 9.5l6.6-.7z"/>',
+  dove:   '<path d="M4 13c2-1 3-3 3-5 2 0 4 1.3 4.6 3.4C12.6 9 15 7 18 7c-1 2-1 3.4 0 5-1.7 3-5 5-10 5-2 0-3.3-.6-4-1z"/><circle cx="16" cy="8.4" r=".6" fill="var(--gold)" stroke="none"/>',
+  teacup: '<path d="M4 9h12v5a6 6 0 0 1-12 0z"/><path d="M16 10.5h2a2 2 0 0 1 0 4h-2"/><path d="M8 5.5c0-1 .6-1 .6-2M12 5.5c0-1 .6-1 .6-2"/>',
+  lantern:'<path d="M9 3h6M10 3v2.5h4V3"/><path d="M8 6h8l-1 12a3 3 0 0 1-6 0z"/><path d="M12 9v6"/>',
+  wine:   '<path d="M8 4h8l-.8 6.2a3.2 3.2 0 0 1-6.4 0z"/><path d="M12 12.5V19M9 19.5h6"/>',
+  compass:'<circle cx="12" cy="12" r="8.4"/><path d="M14.8 9.2l-1.6 4-4 1.6 1.6-4z"/>',
+  sun:    '<circle cx="12" cy="12" r="4.2"/><path d="M12 3v2.4M12 18.6V21M3 12h2.4M18.6 12H21M5.6 5.6l1.7 1.7M16.7 16.7l1.7 1.7M5.6 18.4l1.7-1.7M16.7 7.3l1.7-1.7"/>'
+};
+const TABLE_MARK_LIST = Object.keys(TABLE_MARKS);
+function tableMarkSvg(key){
+  return '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">'+
+    (TABLE_MARKS[key]||TABLE_MARKS.leaf)+"</svg>";
 }
 function drawPlan(host, editable, highlight){
   if(!host) return;
+  const cap = coupleMarkImg;
   const fx = S.fixtures.map(f=>'<div class="pt fixture rect" style="left:'+f.x+"%;top:"+f.y+"%;width:"+f.w+
     "px;height:"+f.h+'px"><b>'+esc(L(f.label))+"</b></div>").join("");
   const tb = S.tables.map(x=>{
-    const n = tableOccupants(x.id).length, sz = x.r||62;
-    return '<div class="pt'+(x.shape==="rect"?" rect":"")+(highlight===x.id?" mine":"")+'" data-tb="'+x.id+
-      '" style="left:'+x.x+"%;top:"+x.y+"%;width:"+(x.shape==="rect"?sz*2.4:sz)+"px;height:"+sz+'px"><b>'+
-      esc(L(x.name))+"</b><small>"+n+"/"+x.seats+"</small></div>";
+    const n = tableOccupants(x.id).length, sz = x.r||62, full = n >= x.seats, mine = highlight===x.id;
+    const mark = x.mark === "couple" && cap
+      ? '<span class="pt-mark pt-mark-photo" style="background-image:url(&quot;'+esc(cap)+'&quot;)"></span>'
+      : '<span class="pt-mark pt-mark-icon">'+tableMarkSvg(x.mark||"leaf")+"</span>";
+    return '<div class="pt'+(x.shape==="rect"?" rect":"")+(mine?" mine":"")+(full?" full":"")+'" data-tb="'+x.id+
+      '" style="left:'+x.x+"%;top:"+x.y+"%;width:"+(x.shape==="rect"?sz*2.4:sz)+"px;height:"+sz+'px">'+mark+
+      "<b>"+esc(tableLabel(x))+"</b><small>"+n+"/"+x.seats+"</small></div>";
   }).join("");
   host.innerHTML = fx+tb;
   if(editable) wirePlanDrag(host);
@@ -2098,29 +2171,28 @@ function drawPlan(host, editable, highlight){
 function showTable(id){
   const tb = S.tables.find(x=>x.id===id); if(!tb) return;
   const names = tableOccupants(id);
-  modal("<h3>"+esc(L(tb.name))+'</h3><p class="small">'+names.length+" / "+tb.seats+"</p>"+
+  modal('<div style="display:flex;align-items:center;gap:10px;margin-bottom:4px"><span style="color:var(--gold)">'+
+    tableMarkSvg(tb.mark||"leaf")+"</span><h3 style=\"margin:0\">"+esc(tableLabel(tb))+"</h3></div>"+
+    '<p class="small">'+names.length+" / "+tb.seats+"</p>"+
     (names.length?'<p class="lede" style="margin-top:14px">'+names.map(esc).join(" · ")+"</p>"
       :'<p class="small" style="margin-top:14px">'+A("Personne n'est encore placé ici.","Nobody is seated here yet.")+"</p>"));
 }
-function findSeat(){
-  const q = $("#seatQ").value.trim(), box = $("#seatAns");
-  if(!q){ box.innerHTML = ""; return; }
-  const tokens = norm(q).split(" ").filter(Boolean);
-  const found = [];
-  Object.values(S.rsvps).forEach(r=> r.people.forEach(p=>{
-    const key = r.code+":"+p.id;
-    if(!p.attending || !S.seating[key]) return;
-    const text = norm(p.name+" "+r.household);
-    if(tokens.every(t=> text.indexOf(t) > -1)) found.push({p:p, key:key});
-  }));
-  if(!found.length){ box.innerHTML = '<div class="msg">'+t("vn.seatno")+"</div>"; drawPlan($("#publicPlan"), false); return; }
-  const tbOf = f => S.tables.find(x=>x.id===S.seating[f.key]);
-  const lines = found.slice(0,6).map(f=> t("vn.seatis",{"__N__":esc(f.p.name),"__T__":esc(L(tbOf(f).name))}));
-  const first = found[0], tb = tbOf(first);
-  const mates = tableOccupants(tb.id).filter(n=>n!==first.p.name);
-  box.innerHTML = '<div class="msg good">'+lines.join("<br>")+(found.length>6?"<br>…":"")+
-    (found.length===1 && mates.length ? " "+t("vn.with")+" : "+mates.map(esc).join(", ") : "")+"</div>";
-  drawPlan($("#publicPlan"), false, tb.id);
+
+/* ---------- admin: search within the whole seated room, not just the unseated pool ---------- */
+let seatSearchQ = "";
+function applySeatSearch(){
+  const tk = norm(seatSearchQ).split(" ").filter(Boolean);
+  $$(".pnw").forEach(el=>{ el.style.display = tk.every(t=> el.dataset.n.indexOf(t) > -1) ? "" : "none"; });
+  const out = $("#seatSearchOut");
+  if(!out) return;
+  if(!tk.length){ out.innerHTML = ""; $$(".pt[data-tb]").forEach(el=>el.classList.remove("mine")); return; }
+  const hit = attendees().find(p=> S.seating[p.key] && tk.every(t=> norm(p.name+" "+p.house).indexOf(t) > -1));
+  $$(".pt[data-tb]").forEach(el=>el.classList.remove("mine"));
+  if(hit){
+    const tb = S.tables.find(x=>x.id===S.seating[hit.key]);
+    out.innerHTML = '<div class="msg good">'+esc(hit.name)+" — "+esc(tableLabel(tb))+"</div>";
+    const el = $('.pt[data-tb="'+tb.id+'"]'); if(el) el.classList.add("mine");
+  } else out.innerHTML = '<div class="msg">'+A("Personne d'assis ne correspond.","No one seated matches.")+"</div>";
 }
 
 /* ---------- party ---------- */
@@ -2284,6 +2356,11 @@ function renderRegistry(){
   }).join("");
   grid.innerHTML = cards || '<p class="lede">'+t("reg.empty")+"</p>";
   const gn = $("#giftNote"); if(gn) gn.textContent = L(S.config.giftNote||{fr:"",en:""});
+  const rsw = $("#regShareWa");
+  if(rsw) rsw.onclick = e=>{ e.preventDefault();
+    const msg = A("Notre liste de mariage, ouverte à tous : "+giftShareLink(),
+                  "Our wedding registry, open to everyone: "+giftShareLink());
+    window.open(waLink({phone:""}, msg), "_blank"); };
   $("#regTotal").textContent = t("reg.total",{"__A__":done,
     "__B__":S.registry.filter(i=>i.price>0 && !i.always && !i.multi).length});
   const s3 = $('[data-t="reg.s3.p"]');
@@ -2322,6 +2399,7 @@ function openGift(id){
     showPayment(item, amount, name, $("#gMail").value.trim(), $("#gMsg").value.trim());
   };
 }
+function giftShareLink(){ return (S.config.site||"").replace(/\/+$/,"") + "/#registry"; }
 function giftCode(itemId){
   if(itemId==="honeymoon") return "WG-LUNE";
   const item = S.registry.find(i=>i.id===itemId);
@@ -2966,6 +3044,14 @@ function cInvites(){
       '<button class="tbtn" id="ivCopy">'+A("Copier le message","Copy the message")+'</button> '+
       '<button class="tbtn" id="ivSent">'+A("Marquer comme envoyée","Mark as sent")+'</button> '+
       '<button class="tbtn" id="ivAll">'+A("Télécharger toutes les cartes","Download every card")+"</button></div>"+
+    '<div class="cform" style="margin-top:18px;border-left:3px solid var(--gold)"><h3 style="margin-bottom:6px">'+
+      A("Pour ceux qui ne sont pas invités, ou qui ne peuvent pas venir","For those not invited, or who can't come")+"</h3>"+
+      '<p class="mini" style="margin-bottom:10px">'+A(
+        "Un lien direct vers la liste de cadeaux, sans code ni invitation : à envoyer à qui vous voulez.",
+        "A direct link to the gift list, no code or invitation needed: send it to anyone.")+"</p>"+
+      '<p class="small" style="font-family:ui-monospace,Menlo,monospace;word-break:break-all">'+esc(giftShareLink())+"</p>"+
+      '<button class="tbtn" id="ivGiftWa">WhatsApp</button> '+
+      '<button class="tbtn" id="ivGiftCopy">'+A("Copier le lien","Copy the link")+"</button></div>"+
     '<div id="ivMsg" style="margin-top:12px"></div></div>'+
     '<div style="display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start">'+
       '<div><canvas id="ivCanvas" width="1000" height="1500" style="width:330px;border:1px solid var(--rule);background:#fff"></canvas>'+
@@ -2997,6 +3083,15 @@ function cInvites(){
     try{ await navigator.clipboard.writeText(inviteText(curHouse(), $("#ivLang").value));
       $("#ivMsg").innerHTML = '<div class="msg good">'+A("Message copié.","Message copied.")+"</div>"; }catch(e){}
   };
+  $("#ivGiftWa").onclick = ()=>{
+    const msg = A("Mathi et Nana se marient le "+fmtDate(S.config.dateISO,{day:"numeric",month:"long",year:"numeric"})+
+        " ! Si vous voulez leur offrir un cadeau, c'est par ici : "+giftShareLink(),
+      "Mathi and Nana are getting married on "+fmtDate(S.config.dateISO,{day:"numeric",month:"long",year:"numeric"})+
+        "! If you'd like to give them a gift, here you go: "+giftShareLink());
+    window.open(waLink({phone:""}, msg), "_blank");
+  };
+  $("#ivGiftCopy").onclick = async ()=>{ try{ await navigator.clipboard.writeText(giftShareLink());
+    $("#ivGiftCopy").innerHTML = "<span>"+t("gift.copied")+"</span>"; }catch(e){} };
   $("#ivSent").onclick = async ()=> markSent(curHouse(), true);
   $("#ivSend").onclick = ()=> sendInvite("both");
   $("#ivSendWa").onclick = ()=> sendInvite("wa");
@@ -3063,8 +3158,12 @@ async function unsendInvite(h){
 }
 function invMsg(html, cls){ const m = $("#ivMsg"); if(m) m.innerHTML = html ? '<div class="msg'+(cls?" "+cls:"")+'">'+html+"</div>" : ""; }
 
-// Runs straight from the click. Nothing is awaited before the windows open: a browser only allows
-// a new window while it still sees the click that asked for it, and drawing the card takes time.
+// Browsers only reliably allow ONE window.open() per click; a second call in the same handler is
+// often silently blocked, which is almost certainly why e-mail never appeared. So exactly one
+// channel opens automatically; the other is handed to the person as a real link they click
+// themselves — a genuine click always works, where a second script-triggered window may not.
+// The clipboard write is started in this same tick (before the window opens, while focus is
+// certain) but not awaited, so it can never delay or block the window from opening.
 function sendInvite(mode){
   const h = curHouse(), lg = $("#ivLang").value;
   const hasWa = !!waDigits(h), hasMail = validEmail(h.email);
@@ -3078,73 +3177,98 @@ function sendInvite(mode){
              "Add a WhatsApp number or an e-mail address for this household."), "bad"); return; }
   const mobile = isMobileDevice(), app = mailApp();
   const textWa = inviteText(h, lg), textMail = inviteText(h, lg, "", true);
-  const urls = {wa: doWa ? waLink(h, textWa) : "",
-                mail: doMail ? mailLink(app, String(h.email||"").trim(), inviteSubject(lg), textMail) : ""};
-  const cardP = cardBlob();
-  // the card goes onto the clipboard now, as a promise, so it can still be drawing while this happens
-  const clipOK = !mobile && !!(navigator.clipboard && navigator.clipboard.write && window.ClipboardItem);
-  const clipP = clipOK
-    ? navigator.clipboard.write([new ClipboardItem({"image/png": cardP})]).then(()=>true, ()=>false)
-    : Promise.resolve(false);
-  const opened = {wa:false, mail:false};
+  const urls = {wa: doWa ? waLink(h, textWa) : "", mail: doMail ? mailLink(app, String(h.email||"").trim(), inviteSubject(lg), textMail) : ""};
+  invMsg(A("Préparation de la carte…","Preparing the card…"));
+
+  if(mobile){
+    finishSendMobile(h, {doWa:doWa, doMail:doMail, mobile:true, app:app, urls:urls, textWa:textWa});
+    return;
+  }
+
+  // exactly one channel opens itself; WhatsApp is the default when both are available
+  const primary = doWa ? "wa" : "mail";
+  const secondary = (doWa && doMail) ? (primary === "wa" ? "mail" : "wa") : null;
+
+  const cardP = cardBlob();                 // drawing starts now; nothing below waits for it yet
+  let clipTried = false, clipPromise = Promise.resolve(false);
+  if(window.ClipboardItem && navigator.clipboard && navigator.clipboard.write){
+    try{ clipPromise = navigator.clipboard.write([new window.ClipboardItem({"image/png": cardP})]).then(()=>true, ()=>false); clipTried = true; }
+    catch(e){ clipTried = false; }
+  }
+
+  const opened = {};
   const pop = url => { const w = window.open(url, "_blank"); if(w){ try{ w.opener = null; }catch(e){} } return !!w; };
-  if(!mobile){
-    if(doWa) opened.wa = pop(urls.wa);
-    if(doMail){ if(app === "mailto"){ goMail(urls.mail); opened.mail = true; } else opened.mail = pop(urls.mail); }
-  }
-  invMsg("…");
-  finishSend(h, {doWa:doWa, doMail:doMail, mobile:mobile, app:app, urls:urls, opened:opened, cardP:cardP, clipP:clipP, textWa:textWa});
+  if(primary === "wa") opened.wa = pop(urls.wa);
+  else { if(app === "mailto"){ goMail(urls.mail); opened.mail = true; } else opened.mail = pop(urls.mail); }
+
+  finishSendDesktop(h, {doWa:doWa, doMail:doMail, mobile:false, app:app, urls:urls, opened:opened,
+    primary:primary, secondary:secondary, cardP:cardP, clipPromise:clipPromise, clipTried:clipTried});
 }
-async function finishSend(h, o){
-  let cancelled = false;
-  if(o.mobile && o.doWa){                         // phone: the share sheet, with the card attached
-    try{
-      const blob = await o.cardP, file = blob ? new File([blob], "invitation-"+h.code+".png", {type:"image/png"}) : null;
-      if(file && navigator.canShare && navigator.canShare({files:[file]})){
-        await navigator.share({files:[file], text:o.textWa}); o.opened.wa = true;
-      } else o.opened.wa = !!window.open(o.urls.wa, "_blank");
-    }catch(e){ if(e && e.name === "AbortError") cancelled = true; }
-  }
-  if(cancelled){ invMsg(""); return; }
-  const copied = await o.clipP;
+async function finishSendDesktop(h, o){
+  const sentNow = []; if(o.opened.wa) sentNow.push("wa"); if(o.opened.mail) sentNow.push("mail");
+  if(sentNow.length) await markSentVia(h, sentNow);
   let downloaded = false;
-  if(!o.mobile && !copied){                       // no clipboard support: hand over the file instead
-    try{
-      const blob = await o.cardP, a = document.createElement("a");
-      a.href = URL.createObjectURL(blob); a.download = "invitation-"+h.code+".png"; a.click(); downloaded = true;
-    }catch(e){}
-  }
-  const sent = []; if(o.opened.wa) sent.push("wa"); if(o.opened.mail) sent.push("mail");
-  if(sent.length) await markSentVia(h, sent);
+  try{
+    const blob = await o.cardP;
+    if(blob){ const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "invitation-"+h.code+".png"; a.click(); downloaded = true; }
+  }catch(e){}
+  const copied = o.clipTried ? await o.clipPromise : false;
   showSendResult(h, o, copied, downloaded);
 }
+async function finishSendMobile(h, o){
+  const blob = await cardBlob(), file = blob ? new File([blob], "invitation-"+h.code+".png", {type:"image/png"}) : null;
+  const opened = {};
+  if(o.doWa){
+    if(file && navigator.canShare && navigator.canShare({files:[file]})){
+      try{ await navigator.share({files:[file], text:o.textWa}); opened.wa = true; }
+      catch(e){ if(e && e.name === "AbortError"){ invMsg(""); return; } opened.wa = !!window.open(o.urls.wa, "_blank"); }
+    } else opened.wa = !!window.open(o.urls.wa, "_blank");
+  }
+  const sentNow = []; if(opened.wa) sentNow.push("wa");
+  if(sentNow.length) await markSentVia(h, sentNow);
+  o.opened = opened; o.secondary = o.doMail ? "mail" : null; o.primary = "wa";
+  showSendResult(h, o, false, false);
+}
+function sendSecondary(h, o){
+  const ch = o.secondary; if(!ch) return;
+  let ok = false;
+  if(ch === "wa") ok = !!window.open(o.urls.wa, "_blank");
+  else if(o.app === "mailto"){ goMail(o.urls.mail); ok = true; }
+  else ok = !!window.open(o.urls.mail, "_blank");
+  if(ok) markSentVia(h, [ch]);
+  o.opened = o.opened || {}; o.opened[ch] = ok;
+  o.secondary = null;
+  showSendResult(h, o, null, null);
+}
 function showSendResult(h, o, copied, downloaded){
-  const row = (ok, label, url, ch) => {
-    const again = '<a target="_blank" rel="noopener" href="'+esc(url)+'" data-sentch="'+ch+'" class="'+(ok?"mini":"btn sm gold")+'" style="margin-left:8px">'+
-      (ok ? A("Rouvrir","Open again") : A("Ouvrir","Open")+" "+label)+"</a>";
-    if(ok) return '<p style="margin:0 0 8px"><b style="color:#3F5E3B">✓</b> '+label+" "+A("ouvert","opened")+again+"</p>";
-    if(o.mobile && ch === "mail") return '<p style="margin:0 0 8px"><b style="color:#B08D4F">→</b> '+label+" : "+A("prêt, touchez pour l'ouvrir.","ready, tap to open.")+again+"</p>";
-    return '<p style="margin:0 0 8px"><b style="color:#9D5B4E">!</b> '+label+" : "+
-      A("le navigateur a bloqué l'ouverture de la fenêtre.","the browser blocked the window from opening.")+again+"</p>";
-  };
+  const label = ch => ch === "wa" ? "WhatsApp" : A("E-mail","E-mail");
+  const openedRow = ch => '<p style="margin:0 0 8px"><b style="color:#3F5E3B">✓</b> '+label(ch)+" "+A("ouvert","opened")+
+    '<a class="mini" target="_blank" rel="noopener" href="'+esc(o.urls[ch])+'" data-sentch="'+ch+'" style="margin-left:8px">'+A("Rouvrir","Open again")+"</a></p>";
+  const blockedRow = ch => '<p style="margin:0 0 8px"><b style="color:#9D5B4E">!</b> '+label(ch)+" : "+
+    A("le navigateur a bloqué l'ouverture de la fenêtre.","the browser blocked the window from opening.")+
+    '<a class="btn sm gold" target="_blank" rel="noopener" href="'+esc(o.urls[ch])+'" data-sentch="'+ch+'" style="margin-left:8px">'+A("Ouvrir","Open")+" "+label(ch)+"</a></p>";
+  const readyRow = ch => '<p style="margin:0 0 8px"><b style="color:#B08D4F">→</b> '+label(ch)+" : "+
+    A("prêt — ouvrez-le pour l'envoyer aussi.","ready — open it to send this one too.")+
+    '<button class="btn sm gold" data-opensecond style="margin-left:8px">'+A("Ouvrir ","Open ")+label(ch)+"</button></p>";
   let html = "";
-  if(o.doWa)   html += row(o.opened.wa, "WhatsApp", o.urls.wa, "wa");
-  if(o.doMail) html += row(o.opened.mail, A("E-mail","E-mail"), o.urls.mail, "mail");
-  if(!o.mobile && copied)
-    html += '<p class="small" style="margin:10px 0 0"><b>'+A("La carte est copiée.","The card is copied.")+"</b> "+
-      A("Dans WhatsApp et dans l'e-mail, collez-la avec Ctrl+V (Cmd+V sur Mac), puis envoyez.",
-        "In WhatsApp and in the e-mail, paste it with Ctrl+V (Cmd+V on a Mac), then send.")+"</p>";
-  else if(!o.mobile && downloaded)
-    html += '<p class="small" style="margin:10px 0 0">'+A("Ce navigateur n'a pas pu copier la carte : elle a été téléchargée. Glissez-la dans la conversation et dans l'e-mail.",
-      "This browser could not copy the card: it was downloaded. Drag it into the chat and into the e-mail.")+"</p>";
-  else if(o.mobile && o.doMail)
+  if(o.doWa)   html += (o.opened.wa ? openedRow("wa") : (o.secondary === "wa" ? readyRow("wa") : blockedRow("wa")));
+  if(o.doMail) html += (o.opened.mail ? openedRow("mail") : (o.secondary === "mail" ? readyRow("mail") : blockedRow("mail")));
+  if(!o.mobile){
+    html += '<div class="msg good" style="margin:12px 0 0;padding:12px"><b>'+A("La carte a été téléchargée.","The card has been downloaded.")+'</b> '+
+      A("Glissez-la dans la conversation et dans l'e-mail (ou cherchez « invitation-"+h.code+".png » dans vos téléchargements).",
+        "Drag it into the chat and into the e-mail (or look for “invitation-"+h.code+".png” in your downloads).")+
+      (copied ? " "+A("Elle est aussi copiée : collez-la avec Ctrl+V (Cmd+V sur Mac) si vous préférez.",
+                       "It is also copied: paste it with Ctrl+V (Cmd+V on a Mac) if you prefer.") : "")+"</div>";
+  } else if(o.doMail && o.secondary === "mail"){
     html += '<p class="small" style="margin:10px 0 0">'+A("L'e-mail contient le message et le lien de réponse ; la carte part par WhatsApp.",
       "The e-mail carries the message and the reply link; the card goes by WhatsApp.")+"</p>";
+  }
   html += '<p class="mini" style="margin:12px 0 0">'+A("Vous appuyez vous-même sur Envoyer dans chaque fenêtre.","You press Send yourself in each window.")+
     ' <a href="#" id="ivUnsend">'+A("Annuler : marquer comme non envoyée","Undo: mark as not sent")+"</a></p>";
   const m = $("#ivMsg"); if(!m) return;
   m.innerHTML = '<div class="msg good">'+html+"</div>";
   $$("[data-sentch]", m).forEach(a=> a.onclick = ()=>{ markSentVia(h, [a.dataset.sentch]); });
+  const sb = $("[data-opensecond]", m); if(sb) sb.onclick = ()=> sendSecondary(h, o);
   $("#ivUnsend").onclick = async e=>{ e.preventDefault(); await unsendInvite(h); invMsg(esc(h.household)+" : "+A("marquée comme non envoyée.","marked as not sent.")); };
 }
 
@@ -3406,9 +3530,17 @@ function cReplies(){
 let picked = null;
 function attendees(){
   const out = [];
-  Object.values(S.rsvps).forEach(r=> r.people.forEach(p=>{
-    if(p.attending) out.push({key:r.code+":"+p.id, name:p.name, house:r.household, allergy:rsvpAllergy(r), wants:""});
-  }));
+  S.guests.forEach(h=>{
+    const r = S.rsvps[h.code];
+    h.people.forEach(p=>{
+      if(r){
+        const pr = r.people.find(x=>x.id===p.id);
+        if(pr && pr.attending) out.push({key:h.code+":"+p.id, name:pr.name||p.name, house:h.household, allergy:rsvpAllergy(r), wants:"", provisional:false});
+      } else {
+        out.push({key:h.code+":"+p.id, name:p.name, house:h.household, allergy:"", wants:"", provisional:true});
+      }
+    });
+  });
   return out;
 }
 function cSeating(){
@@ -3419,23 +3551,32 @@ function cSeating(){
       '<div><label>'+A("Places","Seats")+'</label><input id="tbSeats" type="number" value="10"></div>'+
       '<div><label>'+A("Forme","Shape")+'</label><select id="tbShape"><option value="round">'+A("Ronde","Round")+
         '</option><option value="rect">'+A("Rectangulaire","Rectangular")+"</option></select></div>"+
+      '<div><label>'+A("Symbole","Icon")+'</label><select id="tbMark">'+
+        TABLE_MARK_LIST.map(k=>'<option value="'+k+'">'+k+"</option>").join("")+
+        '<option value="couple">'+A("Photo du couple","Couple photo")+"</option></select></div>"+
       '<div style="align-self:end"><button class="btn sm" id="tbAdd">'+A("Ajouter","Add")+"</button></div></div>"+
       '<div style="margin-top:12px"><button class="tbtn" id="tbAuto">'+A("Placer par foyer","Auto-seat by household")+
       '</button> <button class="tbtn" id="tbClear">'+A("Tout vider","Clear all")+
       '</button> <button class="tbtn" id="tbPrint">'+A("Imprimer","Print")+
       '</button> <button class="tbtn" id="tbCards">'+A("Marque-places (CSV)","Place cards (CSV)")+"</button>"+
       '<span class="mini" style="margin-left:10px">'+A("Glissez les tables pour dessiner la salle. Cliquez un nom puis une table pour l'asseoir.",
-        "Drag tables to lay out the room. Click a name then a table to seat them.")+"</span></div></div>"+
+        "Drag tables to lay out the room. Click a name then a table to seat them.")+"</span>"+
+      '<p class="mini" style="margin-top:8px">'+A(
+        "Chaque invité a une place provisoire dès qu'il est placé, même avant sa réponse. Un « non » libère la place automatiquement ; un « oui » ne change rien.",
+        "Everyone has a provisional seat the moment they're placed, even before they reply. A “no” frees the seat automatically; a “yes” changes nothing.")+"</p></div></div>"+
     '<div style="display:grid;grid-template-columns:250px 1fr;gap:16px;align-items:start" id="seatGrid">'+
       '<div class="pool"><h3>'+A("À placer","To be seated")+' <span class="mini">('+unseated.length+"/"+all.length+")</span></h3>"+
-      '<input id="poolQ" autocomplete="off" placeholder="'+A("Rechercher un nom…","Search a name…")+'" value="'+esc(poolQ)+'" style="margin:8px 0;width:100%">'+
+      '<input id="poolQ" autocomplete="off" placeholder="'+A("Rechercher un nom à placer…","Search a name to seat…")+'" value="'+esc(poolQ)+'" style="margin:8px 0;width:100%">'+
       (unseated.length? unseated.map(p=>'<div class="pnw" data-n="'+esc(norm(p.name+" "+p.house))+'"><div class="pn" data-k="'+esc(p.key)+'">'+esc(p.name)+"<small>"+esc(p.house)+
         "</small></div>"+(p.wants?'<p class="mini" style="margin:-3px 0 7px 6px">↳ '+esc(p.wants)+"</p>":"")+"</div>").join("")
         :'<p class="mini">'+A("Tout le monde est placé.","Everyone is seated.")+"</p>")+"</div>"+
-      '<div><div class="planwrap" id="adminPlan" style="height:560px"></div>'+
+      '<div><input id="seatSearch" autocomplete="off" placeholder="'+A("Chercher quelqu\'un de déjà placé…","Find someone already seated…")+
+        '" value="'+esc(seatSearchQ)+'" style="width:100%;margin-bottom:8px"><div id="seatSearchOut" style="margin-bottom:8px"></div>'+
+      '<div class="planwrap" id="adminPlan" style="height:620px"></div>'+
       '<div id="tableList" style="margin-top:14px"></div></div></div>';
-  drawPlan($("#adminPlan"), true);
+  ensureCoupleMark().then(()=> drawPlan($("#adminPlan"), true));
   renderTableList();
+  $("#seatSearch").oninput = e=>{ seatSearchQ = e.target.value; applySeatSearch(); };
   const applyPool = ()=>{ const tk = norm(poolQ).split(" ").filter(Boolean);
     $$(".pnw").forEach(el=>{ el.style.display = tk.every(t=> el.dataset.n.indexOf(t) > -1) ? "" : "none"; }); };
   $("#poolQ").oninput = e=>{ poolQ = e.target.value; applyPool(); };
@@ -3443,9 +3584,10 @@ function cSeating(){
   $$(".pn").forEach(el=> el.onclick = ()=>{ $$(".pn").forEach(n=>n.classList.remove("picked"));
     el.classList.add("picked"); picked = el.dataset.k; });
   $("#tbAdd").onclick = async ()=>{
+    const markPick = $("#tbMark") ? $("#tbMark").value : "leaf";
     const nm = $("#tbName").value.trim(); if(!nm) return;
     S.tables.push({id:uid("tb"), name:{fr:nm,en:nm}, seats:Number($("#tbSeats").value||10),
-      x:50, y:50, r:62, shape:$("#tbShape").value});
+      x:50, y:50, r:62, shape:$("#tbShape").value, mark:markPick});
     await save("tables"); cSeating();
   };
   $("#tbClear").onclick = async ()=>{ if(!confirm(A("Vider le plan ?","Clear the plan?"))) return;
@@ -3453,9 +3595,22 @@ function cSeating(){
   $("#tbAuto").onclick = async ()=>{
     const byHouse = {};
     all.filter(p=>!S.seating[p.key]).forEach(p=>(byHouse[p.house]=byHouse[p.house]||[]).push(p));
-    for(const grp of Object.values(byHouse)){
-      const tb = S.tables.find(t=> tableOccupants(t.id).length + grp.length <= t.seats);
-      if(tb) grp.forEach(p=> S.seating[p.key] = tb.id);
+    const groups = Object.values(byHouse).sort((a,b)=> b.length - a.length);     // biggest households placed first
+    for(const grp of groups){
+      let tb = S.tables.find(t=> tableOccupants(t.id).length + grp.length <= t.seats);
+      if(!tb){
+        const roomy = S.tables.filter(t=> t.seats - tableOccupants(t.id).length > 0)
+          .sort((a,b)=> (b.seats-tableOccupants(b.id).length) - (a.seats-tableOccupants(a.id).length))[0];
+        tb = roomy;    // the household must split across tables; take the roomiest and fill the rest below
+      }
+      if(!tb) continue;
+      let left = tb.seats - tableOccupants(tb.id).length;
+      grp.slice(0, left).forEach(p=> S.seating[p.key] = tb.id);
+      const remainder = grp.slice(left);
+      remainder.forEach(p=>{
+        const t2 = S.tables.find(t=> tableOccupants(t.id).length < t.seats);
+        if(t2) S.seating[p.key] = t2.id;
+      });
     }
     await sset("w:seating", S.seating); cSeating();
   };
@@ -3468,14 +3623,22 @@ function renderTableList(){
   host.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px">'+
     S.tables.map(tb=>{
       const occ = tableOccupants(tb.id);
-      return '<div class="cform" style="margin:0;padding:12px"><div style="display:flex;align-items:baseline;gap:6px;border-bottom:1px solid var(--rule-soft);padding-bottom:6px;margin-bottom:7px">'+
-        '<b style="font-family:var(--serif);font-size:16px">'+esc(L(tb.name))+'</b><small class="mini" style="margin-left:auto">'+
-        occ.length+"/"+tb.seats+'</small><button class="tbtn danger" data-tbd="'+tb.id+'" style="padding:1px 5px">✕</button></div>'+
+      return '<div class="cform" style="margin:0;padding:12px"><div style="display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--rule-soft);padding-bottom:6px;margin-bottom:7px">'+
+        '<span style="color:var(--gold);flex:0 0 auto">'+tableMarkSvg(tb.mark||"leaf")+"</span>"+
+        '<input data-tbn="'+tb.id+'" value="'+esc(L(tb.name))+'" style="border:none;background:none;font-family:var(--serif);font-size:16px;padding:2px 0;flex:1;min-width:0">'+
+        '<select data-tbm="'+tb.id+'" style="font-size:11px;padding:2px">'+
+          TABLE_MARK_LIST.concat(["couple"]).map(k=>'<option value="'+k+'"'+((tb.mark||"leaf")===k?" selected":"")+">"+(k==="couple"?A("Photo","Photo"):k)+"</option>").join("")+
+        "</select>"+
+        '<small class="mini">'+occ.length+"/"+tb.seats+'</small><button class="tbtn danger" data-tbd="'+tb.id+'" style="padding:1px 5px">✕</button></div>'+
         occ.map(n=>{
           const key = Object.keys(S.seating).find(k=> S.seating[k]===tb.id && (attendees().find(a=>a.key===k)||{}).name===n);
           return '<div class="seatn">'+esc(n)+'<button data-un="'+esc(key)+'">✕</button></div>';
         }).join("")+"</div>";
     }).join("")+"</div>";
+  $$("[data-tbn]").forEach(el=> el.onchange = async ()=>{
+    const tb = S.tables.find(t=>t.id===el.dataset.tbn); tb.name = {fr:el.value, en:el.value}; await save("tables"); drawPlan($("#adminPlan"), true); });
+  $$("[data-tbm]").forEach(el=> el.onchange = async ()=>{
+    const tb = S.tables.find(t=>t.id===el.dataset.tbm); tb.mark = el.value; await save("tables"); drawPlan($("#adminPlan"), true); });
   $$("[data-un]").forEach(b=> b.onclick = async ()=>{ delete S.seating[b.dataset.un];
     await sset("w:seating", S.seating); cSeating(); });
   $$("[data-tbd]").forEach(b=> b.onclick = async ()=>{
