@@ -1139,7 +1139,7 @@ const MEDIA = {"h1": "h1.jpg", "h2": "h2.jpg", "h3": "h3.jpg", "h4": "h4.jpg", "
 const SHOOT_LIST = [{"id": "s_857A2147", "fr": "Devant le cœur de roses", "en": "Before the heart of roses"}, {"id": "s_857A2148", "fr": "Devant le cœur de roses", "en": "Before the heart of roses"}, {"id": "s_857A2152", "fr": "Les fleurs", "en": "The flowers"}, {"id": "s_857A2158", "fr": "Assise, les roses dans les bras", "en": "Seated, roses in her arms"}, {"id": "s_857A2166", "fr": "Le rire qui a tout dit", "en": "The laugh that said everything"}, {"id": "s_857A2174", "fr": "Un instant à eux", "en": "A moment of their own"}, {"id": "s_857A2183", "fr": "Le baiser", "en": "The kiss"}, {"id": "s_857A2184", "fr": "Le baiser", "en": "The kiss"}, {"id": "s_857A2235", "fr": "Le champagne", "en": "Champagne"}, {"id": "s_857A2239", "fr": "Front contre front", "en": "Forehead to forehead"}, {"id": "s_857A2242", "fr": "Elle, lui, et rien d'autre", "en": "Her, him, and nothing else"}, {"id": "s_857A2246", "fr": "Les yeux dans les yeux", "en": "Eye to eye"}, {"id": "s_DSC02026", "fr": "L'escalier, avant tout", "en": "The staircase, before everything"}, {"id": "s_DSC02044", "fr": "Les yeux bandés", "en": "Blindfolded"}, {"id": "s_DSC02053", "fr": "Le oui", "en": "The yes"}, {"id": "s_DSC02083", "fr": "Un genou à terre", "en": "Down on one knee"}, {"id": "s_DSC02104", "fr": "L'étreinte", "en": "The embrace"}, {"id": "s_DSC02107", "fr": "« Will you marry me »", "en": "« Will you marry me »"}, {"id": "s_DSC02113", "fr": "La demande", "en": "The proposal"}, {"id": "s_DSC02114", "fr": "La bague", "en": "The ring"}, {"id": "s_DSC02117", "fr": "Fiancés", "en": "Engaged"}, {"id": "s_DSC02128", "fr": "Main dans la main", "en": "Hand in hand"}, {"id": "s_DSC02141", "fr": "Portée", "en": "Carried"}];
 
 /* ---------- cloud sync (Supabase REST, no SDK, no build step) ---------- */
-const BUILD = "28 oct. 2026, r15";
+const BUILD = "28 oct. 2026, r16";
 const CLOUD = {url:"", anon:"", admin:"", on:false, hydrated:false, lastError:"", lastSync:null,
                dirty:new Set(), errLog:[], boot:null, bootTried:false, lastCheck:null};
 const LSK = "mn-admin-key";
@@ -2791,7 +2791,8 @@ function cDash(){
   if(n.pending) todo.push([n.pending+" "+A("invitations sans réponse","invitations unanswered"),"replies"]);
   if(n.pendingPhotos) todo.push([n.pendingPhotos+" "+A("photos à valider","photos to approve"),"photos"]);
   if(n.pendingNotes) todo.push([n.pendingNotes+" "+A("mots du livre d'or à valider","guest-book notes to approve"),"book"]);
-  if(n.yes-n.seated>0) todo.push([(n.yes-n.seated)+" "+A("personnes à placer","people to seat"),"seating"]);
+  const stillToSeat = attendees().filter(p=>!S.seating[p.key]).length;
+  if(stillToSeat>0) todo.push([stillToSeat+" "+A("personnes à placer","people to seat"),"seating"]);
   const unpledged = S.gifts.filter(g=>g.status==="pending").length;
   if(unpledged) todo.push([unpledged+" "+A("cadeaux à confirmer","gifts to confirm"),"gifts"]);
   $("#cp-dash").innerHTML =
@@ -3247,9 +3248,12 @@ function showSendResult(h, o, copied, downloaded){
   const blockedRow = ch => '<p style="margin:0 0 8px"><b style="color:#9D5B4E">!</b> '+label(ch)+" : "+
     A("le navigateur a bloqué l'ouverture de la fenêtre.","the browser blocked the window from opening.")+
     '<a class="btn sm gold" target="_blank" rel="noopener" href="'+esc(o.urls[ch])+'" data-sentch="'+ch+'" style="margin-left:8px">'+A("Ouvrir","Open")+" "+label(ch)+"</a></p>";
-  const readyRow = ch => '<p style="margin:0 0 8px"><b style="color:#B08D4F">→</b> '+label(ch)+" : "+
-    A("prêt — ouvrez-le pour l'envoyer aussi.","ready — open it to send this one too.")+
-    '<button class="btn sm gold" data-opensecond style="margin-left:8px">'+A("Ouvrir ","Open ")+label(ch)+"</button></p>";
+  const readyRow = ch => '<div style="margin:12px 0;padding:16px;border:2px solid var(--gold);border-radius:6px;'+
+    'background:rgba(176,141,79,.1);text-align:center">'+
+    '<p style="margin:0 0 10px;font-weight:600">'+A("Il reste une étape : envoyer aussi par "+label(ch)+".",
+      "One step left: also send by "+label(ch)+".")+"</p>"+
+    '<button class="btn" data-opensecond style="width:100%;max-width:340px"><span>'+
+      A("Ouvrir "+label(ch)+" maintenant","Open "+label(ch)+" now")+"</span></button></div>";
   let html = "";
   if(o.doWa)   html += (o.opened.wa ? openedRow("wa") : (o.secondary === "wa" ? readyRow("wa") : blockedRow("wa")));
   if(o.doMail) html += (o.opened.mail ? openedRow("mail") : (o.secondary === "mail" ? readyRow("mail") : blockedRow("mail")));
@@ -3450,10 +3454,15 @@ async function drawInvite(){
   x.fillText(fr ? S.config.city.fr : (S.config.city.en||S.config.city.fr), W/2, y+38);
   y += 92;
 
-  x.fillStyle = fg2; x.font = "500 18px Jost, Helvetica, Arial";
-  x.fillText(fr?"INVITATION ÉTABLIE AU NOM DE":"THIS INVITATION IS MADE OUT TO", W/2, y);
-  x.fillStyle = fg; x.font = "400 44px 'Cormorant Garamond', Georgia, serif";
-  y = wrapText(x, h.household, W/2, y+52, W-260, 48, 2);
+  x.strokeStyle = line; x.globalAlpha=.7; x.lineWidth=1;
+  x.beginPath(); x.moveTo(W/2-130,y); x.lineTo(W/2+130,y); x.stroke(); x.globalAlpha=1;
+  x.fillStyle = fg2; x.font = "600 19px Jost, Helvetica, Arial";
+  x.fillText((fr?"INVITATION ÉTABLIE AU NOM DE":"THIS INVITATION IS MADE OUT TO").split("").join("\u200a"), W/2, y+34);
+  x.fillStyle = fg; x.font = "600 68px 'Cormorant Garamond', Georgia, serif";
+  y = wrapText(x, h.household, W/2, y+112, W-200, 74, 2);
+  x.strokeStyle = line; x.globalAlpha=.55; x.lineWidth=1;
+  x.beginPath(); x.moveTo(W/2-90,y+6); x.lineTo(W/2+90,y+6); x.stroke(); x.globalAlpha=1;
+  y += 6;
 
   const mode = $("#ivEvents") ? $("#ivEvents").value : "key";
   if(mode !== "none"){
@@ -3533,11 +3542,14 @@ function attendees(){
   S.guests.forEach(h=>{
     const r = S.rsvps[h.code];
     h.people.forEach(p=>{
-      if(r){
-        const pr = r.people.find(x=>x.id===p.id);
-        if(pr && pr.attending) out.push({key:h.code+":"+p.id, name:pr.name||p.name, house:h.household, allergy:rsvpAllergy(r), wants:"", provisional:false});
+      // A person only loses their seat on an explicit decline. If the household replied but this
+      // particular person has no matching entry (the household's membership changed after they
+      // replied), they still get a provisional seat rather than silently vanishing from the room.
+      const pr = r && r.people.find(x=>x.id===p.id);
+      if(pr){
+        if(pr.attending) out.push({key:h.code+":"+p.id, name:pr.name||p.name, house:h.household, allergy:rsvpAllergy(r), wants:"", provisional:false});
       } else {
-        out.push({key:h.code+":"+p.id, name:p.name, house:h.household, allergy:"", wants:"", provisional:true});
+        out.push({key:h.code+":"+p.id, name:p.name, house:h.household, allergy: r?rsvpAllergy(r):"", wants:"", provisional:true});
       }
     });
   });
