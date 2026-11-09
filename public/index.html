@@ -1729,6 +1729,7 @@ async function loadAll(){
   });
   upgradeIcons();
   upgradeCodes();
+  const rsvpsRecovered = healOrphanedRsvps();
   healEventScope();
   const tablesHealed = healTables() || healTableSize();
   const seatingSeeded = await seedSeatingOnce();
@@ -1738,6 +1739,7 @@ async function loadAll(){
   const canPersist = !CLOUD.on || CLOUD.admin;
   if(canPersist){
     if(tablesHealed) await sset("w:tables", S.tables);
+    if(rsvpsRecovered.length) await sset("w:guests", S.guests);
     if(tablesHealed || seatingSeeded || contactHealed){ await sset("w:seating", S.seating); await sset("w:config", S.config); }
   }
   upgradeContent();
@@ -1826,6 +1828,27 @@ async function seedSeatingOnce(){
   }
   S.config.seatingSeeded = true;
   return true;
+}
+function healOrphanedRsvps(){
+  // A reply can exist in the database with no matching guest record, if the guest list
+  // write that should have gone with it failed silently before the admin passphrase
+  // existed (exactly what happened to Sibabalwe, code MN-1100). Rebuild a minimal, clearly
+  // flagged record from the reply itself rather than leaving that person undiscoverable
+  // everywhere the guest list is the source of truth — the seat finder, the party pages,
+  // the dashboard counts.
+  let recovered = [];
+  Object.keys(S.rsvps||{}).forEach(code=>{
+    if((S.guests||[]).some(h=>h.code===code)) return;
+    const r = S.rsvps[code];
+    S.guests.push({
+      id: uid("h"), code: code, household: r.household || code, side: "g", group: "",
+      phone: "", email: "", sent: true, preconfirmed: false, _recovered: true,
+      expected: (r.people||[]).length, events: ["e3","e4","e5","e6","e7"],
+      people: (r.people||[]).map(p=>({id: p.id || uid("m"), name: p.name}))
+    });
+    recovered.push(code);
+  });
+  return recovered;
 }
 function healEventScope(){
   // The traditional day is family-only; anyone not in the "famille" group never had it on their invitation.
@@ -2918,7 +2941,11 @@ function cGuests(){
       : '<span class="tag '+(r.people.some(p=>p.attending)?"yes":"no")+'">'+r.people.filter(p=>p.attending).length+"/"+r.people.length+"</span>";
     const rep = !r ? "wait" : (r.people.some(p=>p.attending) ? "yes" : "no");
     return '<tr data-gid="'+h.id+'" data-side="'+h.side+'" data-rep="'+rep+'" data-sent="'+(h.sent?"1":"0")+
-      '" data-grp="'+esc(norm(h.group||""))+'" data-seats="'+h.people.length+'"><td><b>'+esc(h.household)+'</b><div class="mini">'+h.people.map(p=>esc(p.name)).join(" · ")+
+      '" data-grp="'+esc(norm(h.group||""))+'" data-seats="'+h.people.length+'"><td><b>'+esc(h.household)+'</b>'+
+      (h._recovered?' <span class="tag" style="border-color:var(--gold);color:var(--gold)" title="'+
+        A("Recréé à partir d'une réponse existante : vérifiez le côté, le groupe et les places.",
+          "Rebuilt from an existing reply: check side, group and seats.")+'">'+A("reconstruit","rebuilt")+"</span>":"")+
+      '<div class="mini">'+h.people.map(p=>esc(p.name)).join(" · ")+
       '</div></td><td style="font-family:monospace">'+esc(h.code)+"</td><td>"+(h.side==="g"?A("Marié","Groom"):A("Mariée","Bride"))+
       '<div class="mini">'+esc(h.group||"")+"</div></td><td>"+h.people.length+'</td><td class="mini">'+
       (h.expected ?? h.people.length)+"</td><td>"+(h.preconfirmed?'<span class="tag yes">'+A("Oui","Yes")+"</span>":"")+
