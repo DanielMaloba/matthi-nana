@@ -1139,7 +1139,7 @@ const MEDIA = {"h1": "h1.jpg", "h2": "h2.jpg", "h3": "h3.jpg", "h4": "h4.jpg", "
 const SHOOT_LIST = [{"id": "s_857A2147", "fr": "Devant le cœur de roses", "en": "Before the heart of roses"}, {"id": "s_857A2148", "fr": "Devant le cœur de roses", "en": "Before the heart of roses"}, {"id": "s_857A2152", "fr": "Les fleurs", "en": "The flowers"}, {"id": "s_857A2158", "fr": "Assise, les roses dans les bras", "en": "Seated, roses in her arms"}, {"id": "s_857A2166", "fr": "Le rire qui a tout dit", "en": "The laugh that said everything"}, {"id": "s_857A2174", "fr": "Un instant à eux", "en": "A moment of their own"}, {"id": "s_857A2183", "fr": "Le baiser", "en": "The kiss"}, {"id": "s_857A2184", "fr": "Le baiser", "en": "The kiss"}, {"id": "s_857A2235", "fr": "Le champagne", "en": "Champagne"}, {"id": "s_857A2239", "fr": "Front contre front", "en": "Forehead to forehead"}, {"id": "s_857A2242", "fr": "Elle, lui, et rien d'autre", "en": "Her, him, and nothing else"}, {"id": "s_857A2246", "fr": "Les yeux dans les yeux", "en": "Eye to eye"}, {"id": "s_DSC02026", "fr": "L'escalier, avant tout", "en": "The staircase, before everything"}, {"id": "s_DSC02044", "fr": "Les yeux bandés", "en": "Blindfolded"}, {"id": "s_DSC02053", "fr": "Le oui", "en": "The yes"}, {"id": "s_DSC02083", "fr": "Un genou à terre", "en": "Down on one knee"}, {"id": "s_DSC02104", "fr": "L'étreinte", "en": "The embrace"}, {"id": "s_DSC02107", "fr": "« Will you marry me »", "en": "« Will you marry me »"}, {"id": "s_DSC02113", "fr": "La demande", "en": "The proposal"}, {"id": "s_DSC02114", "fr": "La bague", "en": "The ring"}, {"id": "s_DSC02117", "fr": "Fiancés", "en": "Engaged"}, {"id": "s_DSC02128", "fr": "Main dans la main", "en": "Hand in hand"}, {"id": "s_DSC02141", "fr": "Portée", "en": "Carried"}];
 
 /* ---------- cloud sync (Supabase REST, no SDK, no build step) ---------- */
-const BUILD = "28 oct. 2026, r19";
+const BUILD = "28 oct. 2026, r20";
 const CLOUD = {url:"", anon:"", admin:"", on:false, hydrated:false, lastError:"", lastSync:null,
                dirty:new Set(), errLog:[], boot:null, bootTried:false, lastCheck:null};
 const LSK = "mn-admin-key";
@@ -1147,8 +1147,24 @@ const cloudHeaders = k => ({"apikey":CLOUD.anon, "Authorization":"Bearer "+(k||C
 // The couple's browser holds the admin key and uses it for every write and delete,
 // so row-level security can never quietly refuse something done from the desk.
 const cloudKeyFor = () => CLOUD.admin || CLOUD.anon;
+// w: writes never touch Supabase directly any more: the real secret lives only in the
+// Cloudflare Worker, and this browser sends nothing but the short passphrase the couple
+// chose. Guest writes (rsvp:/gift:/book:/photo:) are untouched and still go straight
+// to Supabase with the public anon key, exactly as before.
+async function adminProxy(op, key, value, passOverride){
+  const pass = passOverride !== undefined ? passOverride : CLOUD.admin;
+  if(!pass) return {ok:false, status:0, error:"no_pass"};
+  try{
+    const r = await fetch("/api/admin", {method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({pass: pass, op: op, key: key, value: value})});
+    let body = {}; try{ body = await r.json(); }catch(e){}
+    if(!r.ok || !body.ok) return {ok:false, status:r.status, error: body.error || ("HTTP "+r.status)};
+    return {ok:true};
+  }catch(e){ return {ok:false, status:0, error:String(e && e.message || e)}; }
+}
 function syncChanged(){ try{ if(typeof syncAlert === "function") syncAlert(); }catch(e){} }
 function cloudNote(key, status, msg){
+  if(msg === "no_pass") msg = A("aucune phrase de passe d'administration dans ce navigateur","no admin passphrase in this browser");
   CLOUD.lastError = (status ? "HTTP "+status+" " : "") + String(msg||"").slice(0,160);
   CLOUD.errLog.unshift({key:key, status:status, msg:String(msg||"").slice(0,200), at:new Date().toISOString()});
   if(CLOUD.errLog.length > 8) CLOUD.errLog.length = 8;
@@ -1176,27 +1192,27 @@ async function cloudGetOne(key){
 }
 async function cloudSet(key, val){
   if(!CLOUD.on) return true;                       // offline mode: nothing to sync
+  if(key.indexOf("w:")===0){
+    const r = await adminProxy("set", key, val);
+    if(!r.ok){ cloudNote(key, r.status, r.error); CLOUD.dirty.add(key); syncChanged(); return false; }
+    CLOUD.dirty.delete(key); if(!CLOUD.dirty.size) CLOUD.lastError = ""; syncChanged(); return true;
+  }
   try{
     const res = await fetch(CLOUD.url+"/rest/v1/wedding_store?on_conflict=key", {method:"POST",
-      headers:Object.assign(cloudHeaders(cloudKeyFor()), {"Prefer":"resolution=merge-duplicates,return=minimal"}),
+      headers:Object.assign(cloudHeaders(CLOUD.anon), {"Prefer":"resolution=merge-duplicates,return=minimal"}),
       body:JSON.stringify({key:key, value:val, updated_at:new Date().toISOString()})});
     if(!res.ok){ cloudNote(key, res.status, await res.text()); CLOUD.dirty.add(key); syncChanged(); return false; }
     CLOUD.dirty.delete(key); if(!CLOUD.dirty.size) CLOUD.lastError = ""; syncChanged(); return true;
   }catch(e){ cloudNote(key, 0, e.message||e); CLOUD.dirty.add(key); syncChanged(); return false; }
 }
 async function cloudDel(key){
+  // Deleting a row is always an administrative action: the public key has permission to
+  // insert and update its own rsvp:/gift:/book:/photo: rows, but no prefix at all may be
+  // deleted with it, so every delete goes through the passphrase-gated proxy.
   if(!CLOUD.on) return true;
-  try{
-    const r = await fetch(CLOUD.url+"/rest/v1/wedding_store?key=eq."+encodeURIComponent(key),
-      {method:"DELETE", headers:cloudHeaders(cloudKeyFor())});
-    if(!r.ok){ cloudNote(key, r.status, await r.text()); CLOUD.dirty.add(key); syncChanged(); return false; }
-    // Row-level security answers "deleted" even when it deleted nothing, so look again.
-    if(await cloudGetOne(key) !== null){
-      cloudNote(key, 0, "la suppression n'a pas été prise en compte (la clé d'administration est nécessaire)");
-      CLOUD.dirty.add(key); syncChanged(); return false;
-    }
-    CLOUD.dirty.delete(key); syncChanged(); return true;
-  }catch(e){ cloudNote(key, 0, e.message||e); CLOUD.dirty.add(key); syncChanged(); return false; }
+  const r = await adminProxy("delete", key);
+  if(!r.ok){ cloudNote(key, r.status, r.error); CLOUD.dirty.add(key); syncChanged(); return false; }
+  CLOUD.dirty.delete(key); syncChanged(); return true;
 }
 async function cloudRetryDirty(){
   if(!CLOUD.on || !CLOUD.dirty.size) return;
@@ -1246,7 +1262,7 @@ async function cloudBoot(){
 async function cloudCheck(over){
   over = over || {};
   const url = String(over.url || CLOUD.url || "").replace(/\/+$/,""), anon = over.anon || CLOUD.anon;
-  const admin = (over.admin !== undefined) ? over.admin : CLOUD.admin;
+  const admin = (over.admin !== undefined) ? over.admin : (over.pass !== undefined ? over.pass : CLOUD.admin);
   const out = {read:false, rows:0, wrows:0, blobs:0, hasAdmin:!!admin, write:false, readback:false,
                guest:null, guestWrite:null, guestSource:"", errors:[], at:new Date()};
   if(!url || !anon){ out.errors.push("adresse ou clé publique manquante"); CLOUD.lastCheck = out; return out; }
@@ -1259,21 +1275,27 @@ async function cloudCheck(over){
       out.blobs = rows.filter(x=>x.key.indexOf("photo:")===0 && x.key!=="photo:_ping").length;
     } else out.errors.push("lecture refusée, HTTP "+r.status);
   }catch(e){ out.errors.push("lecture impossible : "+(e.message||e)); }
-  if(!admin){ out.errors.push("aucune clé d'administration dans ce navigateur"); }
+  if(!admin){ out.errors.push("aucune phrase de passe d'administration dans ce navigateur"); }
   else{
     const stamp = Date.now();
-    try{
-      const w = await fetch(url+"/rest/v1/wedding_store?on_conflict=key", {method:"POST",
-        headers:Object.assign(H(admin), {"Prefer":"resolution=merge-duplicates,return=minimal"}),
-        body:JSON.stringify({key:"w:_ping", value:{t:stamp}, updated_at:new Date().toISOString()})});
-      if(w.ok){
-        out.write = true;
-        const rb = await fetch(url+"/rest/v1/wedding_store?select=value&key=eq."+encodeURIComponent("w:_ping"), {headers:H(anon)});
-        if(rb.ok){ const rows = await rb.json(); out.readback = !!(rows[0] && rows[0].value && rows[0].value.t === stamp); }
-        if(!out.readback) out.errors.push("l'écriture est acceptée mais la relecture ne la retrouve pas");
-        await fetch(url+"/rest/v1/wedding_store?key=eq."+encodeURIComponent("w:_ping"), {method:"DELETE", headers:H(admin)});
-      } else out.errors.push("écriture refusée, HTTP "+w.status+" "+(await w.text()).slice(0,140));
-    }catch(e){ out.errors.push("écriture impossible : "+(e.message||e)); }
+    const pr = await adminProxy("set", "w:_ping", {t:stamp}, admin);
+    if(pr.ok){
+      out.write = true;
+      const rb = await fetch(url+"/rest/v1/wedding_store?select=value&key=eq."+encodeURIComponent("w:_ping"), {headers:H(anon)});
+      if(rb.ok){ const rows = await rb.json(); out.readback = !!(rows[0] && rows[0].value && rows[0].value.t === stamp); }
+      if(!out.readback) out.errors.push("l'écriture est acceptée mais la relecture ne la retrouve pas");
+      await adminProxy("delete", "w:_ping", undefined, admin);
+    } else if(pr.error === "no_pass"){
+      out.errors.push("aucune phrase de passe d'administration dans ce navigateur");
+    } else if(pr.error === "not_configured"){
+      out.errors.push("le serveur d'administration (le Worker) n'est pas encore configuré : voir les instructions de déploiement");
+    } else if(pr.status === 404){
+      out.errors.push("le point d'accès /api/admin répond 404 : la dernière version du Worker n'est pas encore déployée");
+    } else if(pr.error === "wrong_pass"){
+      out.errors.push("la phrase de passe est refusée par le serveur d'administration");
+    } else {
+      out.errors.push("écriture refusée : "+pr.error);
+    }
   }
   const g = guestConnection();
   out.guestSource = g.source;
@@ -4591,11 +4613,11 @@ function cSync(){
       '<div><label>Project URL</label><input id="syUrl" value="'+esc(sy.url||"")+'" placeholder="https://abcdxyz.supabase.co"></div>'+
       '<div><label>anon public key</label><input id="syAnon" value="'+esc(sy.anon||"")+'" placeholder="eyJhbGciOi..."></div>'+
       "</div>"+
-      '<p class="mini" style="margin:12px 0 8px"><b>'+A("Clé d'administration","Admin key")+"</b> — "+A(
-        "la clé service_role. Elle reste dans CE navigateur uniquement : elle n'est jamais enregistrée dans le fichier du site, ni visible par vos invités. Collez-la sur votre machine et sur celle de Mathi, nulle part ailleurs.",
-        "the service_role key. It stays in THIS browser only: it is never saved into the website file and never visible to guests. Paste it on your machine and on Mathi's, nowhere else.")+"</p>"+
-      '<input id="syAdmin" type="password" value="'+esc(CLOUD.admin||"")+'" placeholder="service_role — '+
-        A("facultatif, requis pour modifier le site","optional, required to edit the site")+'">'+
+      '<p class="mini" style="margin:12px 0 8px"><b>'+A("Phrase de passe d'administration","Admin passphrase")+"</b> — "+A(
+        "une phrase que vous choisissez, assez longue pour ne pas être devinée (pas le code public 1205). Tapez-la une fois sur chaque appareil que vous utilisez pour gérer le site — votre machine et celle de Mathi. Le vrai secret Supabase ne quitte jamais le serveur : ce navigateur n'envoie que cette phrase.",
+        "a phrase you choose, long enough not to be guessed (not the public 1205 code). Type it once on each device you use to manage the site — your machine and Mathi's. The real Supabase secret never leaves the server: this browser only ever sends this phrase.")+"</p>"+
+      '<input id="syAdmin" type="password" value="'+esc(CLOUD.admin||"")+'" placeholder="'+
+        A("votre phrase de passe d'administration","your admin passphrase")+'">'+
       '<div style="margin-top:12px"><button class="tbtn" id="syTest">'+A("Tester la connexion","Test the connection")+
       '</button> <button class="btn sm" id="sySave" style="margin-left:6px"><span>'+A("Enregistrer et activer","Save and switch on")+
       '</span></button> <button class="tbtn danger" id="syOff" style="margin-left:6px">'+A("Débrancher","Disconnect")+"</button></div>"+
