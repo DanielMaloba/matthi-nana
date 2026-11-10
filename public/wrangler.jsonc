@@ -1,0 +1,6 @@
+{
+  "name": "matthi-nana",
+  "compatibility_date": "2026-10-23",
+  "main": "worker.js",
+  "assets": { "directory": "./public", "binding": "ASSETS" }
+}
